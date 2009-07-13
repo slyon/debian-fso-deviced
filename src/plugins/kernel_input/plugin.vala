@@ -25,7 +25,7 @@ namespace Kernel
     internal char[] buffer;
     internal const uint BUFFER_SIZE = 512;
 
-    internal const string CONFIG_SECTION = "fsodevice.kernel_input";
+    internal const string KERNEL_INPUT_PLUGIN_NAME = "fsodevice.kernel_input";
 
 /**
  * Implementation of org.freesmartphone.Device.Input for the Kernel Input Device
@@ -40,6 +40,8 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
     // internal, so it can be accessable from aggregate input device
     internal string name;
     internal string product = "<Unknown Product>";
+    internal string phys = "<Unknown Path>";
+    internal string caps = "<Unknown Caps>";
     internal int fd = -1;
 
     static construct
@@ -53,6 +55,38 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
         this.sysfsnode = sysfsnode;
         this.name = Path.get_basename( sysfsnode );
 
+        if ( !_inquireAndCheckForIgnore() )
+        {
+            subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
+            subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
+                                             "%s/%u".printf( FsoFramework.Device.InputServicePath, counter++ ),
+                                                     this );
+            logger.info( "Created new InputDevice object: '%s' @ '%s' w/ '%s'".printf( product, phys, caps ) );
+        }
+        else
+            logger.info( "Skipping as per configuration: '%s' @ '%s' w/ '%s'".printf( product, phys, caps ) );
+    }
+
+    public override string repr()
+    {
+        return "<%s>".printf( sysfsnode );
+    }
+
+    private string _cleanBuffer( int length )
+    {
+        // work around bug in dbus(-glib?) which crashes when marshalling \xae which is the (C) symbol
+        for ( int i = 0; i < length; ++i )
+        {
+            if ( buffer[i] < 0 )
+                buffer[i] = '?';
+        }
+        return (string)buffer;
+    }
+
+    private bool _inquireAndCheckForIgnore()
+    {
+        var ignore = false;
+
         fd = Posix.open( sysfsnode, Posix.O_RDONLY );
         if ( fd == -1 )
             logger.warning( "Can't open %s (%s). Full input device control not available.".printf( sysfsnode, Posix.strerror( Posix.errno ) ) );
@@ -61,31 +95,68 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
             var length = Posix.ioctl( fd, Linux26.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
             if ( length > 0 )
             {
-                // work around bug in dbus(-glib?) which crashes when marshalling \xae which is the (C) symbol
-                for ( int i = 0; i < length; ++i )
+                product = _cleanBuffer( length );
+                foreach ( var i in ignoreById )
                 {
-                    if ( buffer[i] < 0 )
-                        buffer[i] = '?';
+                    if ( i in product )
+                    {
+                        ignore = true;
+                    }
                 }
-                // end work around
-                product = (string)buffer;
-                logger.debug( "^^^ product id '%s'".printf( product ) );
             }
+            length = Posix.ioctl( fd, Linux26.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
+            if ( length > 0 )
+            {
+                phys = _cleanBuffer( length );
+                foreach ( var p in ignoreByPhys )
+                {
+                    if ( p in phys )
+                    {
+                        ignore = true;
+                    }
+                }
+            }
+            short b = 0;
+            if ( Posix.ioctl( fd, Linux26.Input.EVIOCGBIT( 0, Linux26.Input.EV_MAX ), &b ) < 0 )
+            {
+                logger.error( "Can't inquire input device capabilities: %s".printf( strerror( errno ) ) );
+            }
+            else
+            {
+                caps = "";
+                if ( ( b & ( 1 << Linux26.Input.EV_SYN ) ) > 0 )
+                    caps += " SYN";
+                if ( ( b & ( 1 << Linux26.Input.EV_KEY ) ) > 0 )
+                    caps += " KEY";
+                if ( ( b & ( 1 << Linux26.Input.EV_REL ) ) > 0 )
+                    caps += " REL";
+                if ( ( b & ( 1 << Linux26.Input.EV_ABS ) ) > 0 )
+                    caps += " ABS";
+                if ( ( b & ( 1 << Linux26.Input.EV_MSC ) ) > 0 )
+                    caps += " MSC";
+                if ( ( b & ( 1 << Linux26.Input.EV_SW ) ) > 0 )
+                    caps += " SW";
+                if ( ( b & ( 1 << Linux26.Input.EV_LED ) ) > 0 )
+                    caps += " LED";
+                if ( ( b & ( 1 << Linux26.Input.EV_SND ) ) > 0 )
+                    caps += " SND";
+                if ( ( b & ( 1 << Linux26.Input.EV_REP ) ) > 0 )
+                    caps += " REP";
+                if ( ( b & ( 1 << Linux26.Input.EV_FF ) ) > 0 )
+                    caps += " FF";
+                if ( ( b & ( 1 << Linux26.Input.EV_PWR ) ) > 0 )
+                    caps += " PWR";
+                if ( ( b & ( 1 << Linux26.Input.EV_FF_STATUS ) ) > 0 )
+                    caps += " FF_STATUS";
+            }
+            caps = caps.strip();
         }
-
-        //Idle.add( onIdle );
-
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%u".printf( FsoFramework.Device.InputServicePath, counter++ ),
-                                         this );
-
-        logger.info( "created new InputDevice object." );
-    }
-
-    public override string repr()
-    {
-        return "<FsoFramework.Device.InputDevice @ %s>".printf( sysfsnode );
+        if ( ignore && fd != -1 )
+        {
+            Posix.close( fd );
+            fd = -1;
+        }
+        return ignore;
     }
 
     public bool onIdle()
@@ -108,9 +179,14 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
         return product;
     }
 
+    public string get_phys() throws DBus.Error
+    {
+        return phys;
+    }
+
     public string get_capabilities() throws DBus.Error
     {
-        return "none";
+        return caps;
     }
 }
 
@@ -187,8 +263,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
         subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
                                          FsoFramework.Device.InputServicePath,
                                          this );
-
-        logger.info( "created new AggregateInputDevice object." );
+        logger.info( "Created new AggregateInputDevice object." );
     }
 
     private void _registerInputWatches()
@@ -196,8 +271,10 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
         channels = new IOChannel[] {};
         foreach ( var input in instances )
         {
+
             if ( input.fd != -1 )
-            {   var channel = new IOChannel.unix_new( input.fd );
+            {
+                var channel = new IOChannel.unix_new( input.fd );
                 channel.add_watch( IOCondition.IN, onInputEvent );
                 channels += channel;
             }
@@ -206,11 +283,11 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
     private void _parseConfig()
     {
-        var entries = config.keysWithPrefix( CONFIG_SECTION, "report" );
+        var entries = config.keysWithPrefix( KERNEL_INPUT_PLUGIN_NAME, "report" );
         foreach ( var entry in entries )
         {
-            var value = config.stringValue( CONFIG_SECTION, entry );
-            message( "got value '%s'", value );
+            var value = config.stringValue( KERNEL_INPUT_PLUGIN_NAME, entry );
+            //message( "got value '%s'", value );
             var values = value.split( "," );
             if ( values.length != 4 )
             {
@@ -307,7 +384,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
     public override string repr()
     {
-        return "<FsoFramework.Device.AggregateInputDevice @ %s>".printf( sysfsnode );
+        return "<%s>".printf( sysfsnode );
     }
 
     public bool onInputEvent( IOChannel source, IOCondition condition )
@@ -322,7 +399,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
         if ( ev.type != Linux26.Input.EV_SYN )
         {
-            //logger.debug( "input ev %d, %d, %d, %d".printf( source.unix_get_fd(), ev.type, ev.code, ev.value ) );
+            logger.debug( "input ev %d, %d, %d, %d".printf( source.unix_get_fd(), ev.type, ev.code, ev.value ) );
             _handleInputEvent( ref ev );
         }
 
@@ -342,6 +419,11 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
         return "aggregate";
     }
 
+    public string get_phys() throws DBus.Error
+    {
+        return "";
+    }
+
     public string get_capabilities() throws DBus.Error
     {
         return "none";
@@ -355,6 +437,8 @@ internal static string dev_root;
 internal static string dev_input;
 internal GLib.List<Kernel.InputDevice> instances;
 internal Kernel.AggregateInputDevice aggregate;
+internal string[] ignoreById;
+internal string[] ignoreByPhys;
 
 /**
  * This function gets called on plugin initialization time.
@@ -364,12 +448,16 @@ internal Kernel.AggregateInputDevice aggregate;
  **/
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
-    // grab sysfs paths
+    // grab path from config
     var config = FsoFramework.theMasterKeyFile();
     dev_root = config.stringValue( "cornucopia", "dev_root", "/dev" );
     dev_input = "%s/input".printf( dev_root );
 
-    // scan sysfs path for rtcs
+    // grab entry for ignore lists
+    ignoreById = config.stringListValue( Kernel.KERNEL_INPUT_PLUGIN_NAME, "ignore_by_id", new string[] {} );
+    ignoreByPhys = config.stringListValue( Kernel.KERNEL_INPUT_PLUGIN_NAME, "ignore_by_path", new string[] {} );
+
+    // scan path for nodes
     var dir = Dir.open( dev_input );
     var entry = dir.read_name();
     while ( entry != null )
@@ -385,7 +473,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
     // always create aggregated object
     aggregate = new Kernel.AggregateInputDevice( subsystem, dev_input );
 
-    return "fsodevice.kernel_input";
+    return Kernel.KERNEL_INPUT_PLUGIN_NAME;
 }
 
 [ModuleInit]
