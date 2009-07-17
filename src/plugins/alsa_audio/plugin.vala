@@ -34,21 +34,18 @@ public class PlayingSound
     public string name;
     public int loop;
     public int length;
-    public int cid;
     public bool finished;
 
     public uint watch;
 
-    public PlayingSound( string name, int loop, int length, int cid )
+    public PlayingSound( string name, int loop, int length )
     {
         this.name = name;
         this.loop = loop;
         this.length = length;
-        this.cid = cid;
 
         if ( length > 0 )
             watch = Timeout.add_seconds( length, onTimeout );
-        //message( "%s %d created", name, cid );
     }
 
     public bool onTimeout()
@@ -61,7 +58,6 @@ public class PlayingSound
     {
         if ( watch > 0 )
             Source.remove( watch );
-        //message( "%s %d destroyed", name, cid );
     }
 }
 
@@ -89,6 +85,8 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
     private string currentscenario;
     private Queue<string> scenarios;
 
+    //private Mutex mutex;
+
     public AudioPlayer( FsoFramework.Subsystem subsystem )
     {
         this.subsystem = subsystem;
@@ -104,8 +102,10 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         eventfd = new FsoFramework.Async.EventFd( 0, onAsyncEvent );
 
         initScenarios();
+        if ( currentscenario != "" )
+            device.setAllMixerControls( allscenarios[currentscenario].controls );
 
-        device.setAllMixerControls( allscenarios[currentscenario].controls );
+        //mutex = new Mutex();
 
         logger.info( "created." );
     }
@@ -124,14 +124,21 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
      */
     public void onPlayingSoundFinished( Canberra.Context context, uint32 id, Canberra.Error code )
     {
-        logger.debug( "Sound finished with name %s, code %s".printf( (string)id, Canberra.strerror( code ) ) );
-        PlayingSound sound = sounds[(string)id];
+        message( "number of keys in hashmap = %d", sounds.size );
+        //mutex.lock();
+
+        message( "onPlayingSoundFinished w/ id: %0x", id );
+        var name = ( (Quark) id ).to_string();
+        logger.debug( "Sound finished with name %s (%0x), code %s".printf( name, id, Canberra.strerror( code ) ) );
+        PlayingSound sound = sounds[name];
         assert ( sound != null );
+
         sound.finished = true;
 
         if ( code == Canberra.Error.CANCELED || sound.loop == 0 )
         {
-            sounds.remove( (string)id );
+            message( "removing sound w/ id %0x", id );
+            sounds.remove( name );
             //FIXME send signal
         }
         else
@@ -139,31 +146,30 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
             // wake up mainloop to repeat
             eventfd.write( (int)id );
         }
+
+        //mutex.unlock();
     }
 
     public bool onAsyncEvent( IOChannel channel, IOCondition condition )
     {
-        //message( "async trigger" );
-        uint value = eventfd.read();
-        //message( "on async event: %u", value );
-        foreach ( var name in sounds.get_keys() )
+        uint id = eventfd.read();
+        var name = ( (Quark) id ).to_string();
+        PlayingSound sound = sounds[name];
+        if ( sound.finished && sound.loop-- > 0 )
         {
-            PlayingSound sound = sounds[name];
-            if ( sound.finished && sound.loop-- > 0 )
-            {
-                sound.finished = false;
+            sound.finished = false;
 
-                Canberra.Proplist p = null;
-                Canberra.Proplist.create( &p );
-                p.sets( Canberra.PROP_MEDIA_FILENAME, sound.name );
+            Canberra.Proplist p = null;
+            Canberra.Proplist.create( &p );
+            p.sets( Canberra.PROP_MEDIA_FILENAME, sound.name );
 
-                Canberra.Error res = context.play_full( sound.cid, p, onPlayingSoundFinished );
-            }
-            else
-            {
-                sounds.remove( name );
+            Canberra.Error res = context.play_full( Quark.from_string( sound.name ), p, onPlayingSoundFinished );
+        }
+        else
+        {
+            message( "removing sound w/ id %0x", id );
+            sounds.remove( name );
             //FIXME send stopped signal
-            }
         }
         return true; // MainLoop: call me again
     }
@@ -185,8 +191,6 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
                 controls += control;
             }
             logger.debug( "Scenario %s successfully read from file %s".printf( scenario, file.get_path() ) );
-            if ( allscenarios == null )
-                allscenarios = new HashMap<string,BunchOfMixerControls>( str_hash, str_equal );
             var bunch = new BunchOfMixerControls();
             bunch.controls = controls;
             allscenarios[scenario] = bunch;
@@ -199,6 +203,9 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
     private void initScenarios()
     {
+        allscenarios = new HashMap<string,BunchOfMixerControls>( str_hash, str_equal );
+        currentscenario = "";
+
         // init scenarios
         FsoFramework.SmartKeyFile alsaconf = new FsoFramework.SmartKeyFile();
         if ( alsaconf.loadFromFile( FSO_ALSA_CONF_PATH ) )
@@ -256,7 +263,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         return currentscenario;
     }
 
-    public string pull_scenario() throws DBus.Error
+    public string pull_scenario() throws FreeSmartphone.Device.AudioError, DBus.Error
     {
         var scenario = scenarios.pop_head();
         if ( scenario == null )
@@ -271,7 +278,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         set_scenario( scenario );
     }
 
-    public void set_scenario( string scenario ) throws DBus.Error
+    public void set_scenario( string scenario ) throws /* FreeSmartphone.Error, */ DBus.Error
     {
         if ( !( scenario in allscenarios.get_keys() ) )
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Could not find scenario %s".printf( scenario ) );
@@ -298,20 +305,24 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         Canberra.Proplist.create( &p );
         p.sets( Canberra.PROP_MEDIA_FILENAME, name );
 
-        Canberra.Error res = context.play_full( (uint32)name, p, onPlayingSoundFinished );
+        //message( "canberra context.play_full %s (%0x)", name, Quark.from_string( name ) );
+        Canberra.Error res = context.play_full( Quark.from_string( name ), p, onPlayingSoundFinished );
 
         if ( res != Canberra.SUCCESS )
         {
             throw new FreeSmartphone.Device.AudioError.PLAYER_ERROR( "Can't play song %s: %s".printf( name, Canberra.strerror( res ) ) );
         }
 
-        sounds[name] = new PlayingSound( name, loop, length, (int)name );
+        sounds[name] = new PlayingSound( name, loop, length );
     }
 
     public void stop_all_sounds() throws DBus.Error
     {
         foreach ( var name in sounds.get_keys() )
+        {
+            //message( "stopping sound '%s' (%0x)", name, Quark.from_string( name ) );
             stop_sound( name );
+        }
     }
 
     public void stop_sound( string name ) throws DBus.Error
@@ -320,8 +331,8 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         if ( sound == null )
             return;
 
-        Canberra.Error res = context.cancel( sound.cid );
-        logger.debug( "cancelling %s (%d) result: %s".printf( sound.name, sound.cid, Canberra.strerror( res ) ) );
+        Canberra.Error res = context.cancel( Quark.from_string( name ) );
+        logger.debug( "cancelling %s (%0x) result: %s".printf( sound.name, Quark.from_string( name ), Canberra.strerror( res ) ) );
     }
 
 }
