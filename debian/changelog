@@ -1,8 +1,8 @@
-fso-deviced (0+git20090716-1) pkg-fso; urgency=low
+fso-deviced (0+git20090717-1) pkg-fso; urgency=low
 
   * New upstream snapshot
 
- -- Heiko Stuebner <heiko@sntech.de>  Fri, 17 Jul 2009 23:44:10 +0200
+ -- Heiko Stuebner <heiko@sntech.de>  Mon, 20 Jul 2009 17:44:10 +0200
 
 fso-deviced (0+git20090626-1) pkg-fso; urgency=low
 
