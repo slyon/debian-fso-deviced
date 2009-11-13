@@ -71,7 +71,9 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_DIR = @DBUS_DIR@
 DBUS_LIBS = @DBUS_LIBS@
+DBUS_SERVICE_DIR = @DBUS_SERVICE_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
@@ -182,6 +184,9 @@ top_srcdir = @top_srcdir@
 NULL = 
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS = \
+	accelerometer \
+	accelerometer_lis302 \
+	\
 	alsa_audio \
 	\
 	kernel26_display \
@@ -195,6 +200,7 @@ SUBDIRS = \
 	\
 	thinkpad_powercontrol \
 	openmoko_powercontrol \
+	\
 	$(NULL)
 
 all: all-recursive

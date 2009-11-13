@@ -792,6 +792,8 @@ CANBERRA_LIBS
 CANBERRA_CFLAGS
 FSO_LIBS
 FSO_CFLAGS
+DBUS_SERVICE_DIR
+DBUS_DIR
 DBUS_LIBS
 DBUS_CFLAGS
 GEE_LIBS
@@ -2545,6 +2547,7 @@ INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AMTAR=${AMTAR-"${am_missing_run}tar"}
 
 am__tar='${AMTAR} chof - "$$tardir"'; am__untar='${AMTAR} xf -'
+
 
 
 
@@ -5242,13 +5245,13 @@ if test "${lt_cv_nm_interface+set}" = set; then
 else
   lt_cv_nm_interface="BSD nm"
   echo "int some_variable = 0;" > conftest.$ac_ext
-  (eval echo "\"\$as_me:5245: $ac_compile\"" >&5)
+  (eval echo "\"\$as_me:5248: $ac_compile\"" >&5)
   (eval "$ac_compile" 2>conftest.err)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5248: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
+  (eval echo "\"\$as_me:5251: $NM \\\"conftest.$ac_objext\\\"\"" >&5)
   (eval "$NM \"conftest.$ac_objext\"" 2>conftest.err > conftest.out)
   cat conftest.err >&5
-  (eval echo "\"\$as_me:5251: output\"" >&5)
+  (eval echo "\"\$as_me:5254: output\"" >&5)
   cat conftest.out >&5
   if $GREP 'External.*some_variable' conftest.out > /dev/null; then
     lt_cv_nm_interface="MS dumpbin"
@@ -6453,7 +6456,7 @@ ia64-*-hpux*)
   ;;
 *-*-irix6*)
   # Find out which ABI we are using.
-  echo '#line 6456 "configure"' > conftest.$ac_ext
+  echo '#line 6459 "configure"' > conftest.$ac_ext
   if { (eval echo "$as_me:$LINENO: \"$ac_compile\"") >&5
   (eval $ac_compile) 2>&5
   ac_status=$?
@@ -7788,11 +7791,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:7791: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:7794: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:7795: \$? = $ac_status" >&5
+   echo "$as_me:7798: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8127,11 +8130,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8130: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8133: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>conftest.err)
    ac_status=$?
    cat conftest.err >&5
-   echo "$as_me:8134: \$? = $ac_status" >&5
+   echo "$as_me:8137: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s "$ac_outfile"; then
      # The compiler can only warn and ignore the option if not recognized
      # So say no if there are warnings other than the usual output.
@@ -8232,11 +8235,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8235: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8238: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8239: \$? = $ac_status" >&5
+   echo "$as_me:8242: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -8287,11 +8290,11 @@ else
    -e 's:.*FLAGS}\{0,1\} :&$lt_compiler_flag :; t' \
    -e 's: [^ ]*conftest\.: $lt_compiler_flag&:; t' \
    -e 's:$: $lt_compiler_flag:'`
-   (eval echo "\"\$as_me:8290: $lt_compile\"" >&5)
+   (eval echo "\"\$as_me:8293: $lt_compile\"" >&5)
    (eval "$lt_compile" 2>out/conftest.err)
    ac_status=$?
    cat out/conftest.err >&5
-   echo "$as_me:8294: \$? = $ac_status" >&5
+   echo "$as_me:8297: \$? = $ac_status" >&5
    if (exit $ac_status) && test -s out/conftest2.$ac_objext
    then
      # The compiler can only warn and ignore the option if not recognized
@@ -11103,7 +11106,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11106 "configure"
+#line 11109 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11199,7 +11202,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11202 "configure"
+#line 11205 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11474,14 +11477,15 @@ fi
 
 
 
-VALA_REQUIRED=0.7.2
+VALA_REQUIRED=0.7.8
 GLIB_REQUIRED=2.18.0
-GEE_REQUIRED=0.1.6
+GEE_REQUIRED=0.5.0
 DBUS_REQUIRED=1.2.1
 DBUS_GLIB_REQUIRED=0.76
-FSO_GLIB_REQUIRED=0.1.0
-FSO_REQUIRED=0.0.0.0
-CANBERRA_REQUIRED=0.12
+FSO_GLIB_REQUIRED=0.2.0
+FSO_FRAMEWORK_REQUIRED=0.2.3
+FSO_RESOURCE_REQUIRED=0.1.0
+CANBERRA_REQUIRED=0.17
 
 # vala
 
@@ -12093,6 +12097,22 @@ fi
 
 
 
+# dbus conf directory
+DBUS_DIR="`$PKG_CONFIG --variable=sysconfdir dbus-1`"
+if (test -z "{DBUS_DIR}"); then
+  DBUS_DIR="${sysconfdir}/dbus-1"
+else
+  DBUS_DIR="$DBUS_DIR/dbus-1"
+fi
+
+
+# dbus service directory
+DBUS_SERVICE_DIR="`$PKG_CONFIG --variable=session_bus_services_dir dbus-1`"
+if (test -z "{DBUS_SERVICE_DIR}"); then
+  DBUS_SERVICE_DIR="${datadir}/dbus-1/services"
+fi
+
+
 # fso-glib and framework
 
 pkg_failed=no
@@ -12105,14 +12125,17 @@ if test -n "$PKG_CONFIG"; then
     else
         if test -n "$PKG_CONFIG" && \
     { ($as_echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"fso-glib-1.0 >= \$FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= \$FSO_REQUIRED\"") >&5
+  fsoresource-2.0 >= \$FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= \$FSO_FRAMEWORK_REQUIRED\"") >&5
   ($PKG_CONFIG --exists --print-errors "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED") 2>&5
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED") 2>&5
   ac_status=$?
   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_FSO_CFLAGS=`$PKG_CONFIG --cflags "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED" 2>/dev/null`
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -12126,14 +12149,17 @@ if test -n "$PKG_CONFIG"; then
     else
         if test -n "$PKG_CONFIG" && \
     { ($as_echo "$as_me:$LINENO: \$PKG_CONFIG --exists --print-errors \"fso-glib-1.0 >= \$FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= \$FSO_REQUIRED\"") >&5
+  fsoresource-2.0 >= \$FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= \$FSO_FRAMEWORK_REQUIRED\"") >&5
   ($PKG_CONFIG --exists --print-errors "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED") 2>&5
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED") 2>&5
   ac_status=$?
   $as_echo "$as_me:$LINENO: \$? = $ac_status" >&5
   (exit $ac_status); }; then
   pkg_cv_FSO_LIBS=`$PKG_CONFIG --libs "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED" 2>/dev/null`
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -12153,16 +12179,19 @@ else
 fi
         if test $_pkg_short_errors_supported = yes; then
 	        FSO_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED"`
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED"`
         else
 	        FSO_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED"`
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$FSO_PKG_ERRORS" >&5
 
 	{ { $as_echo "$as_me:$LINENO: error: Package requirements (fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED) were not met:
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED) were not met:
 
 $FSO_PKG_ERRORS
 
@@ -12174,7 +12203,8 @@ and FSO_LIBS to avoid the need to call pkg-config.
 See the pkg-config man page for more details.
 " >&5
 $as_echo "$as_me: error: Package requirements (fso-glib-1.0 >= $FSO_GLIB_REQUIRED
-  fsoframework-2.0 >= $FSO_REQUIRED) were not met:
+  fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED) were not met:
 
 $FSO_PKG_ERRORS
 
@@ -12337,7 +12367,7 @@ fi
 
 
 
-ac_config_files="$ac_config_files Makefile src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/alsa_audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/thinkpad_powercontrol/Makefile src/plugins/openmoko_powercontrol/Makefile tests/Makefile"
+ac_config_files="$ac_config_files Makefile data/Makefile src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/accelerometer/Makefile src/plugins/accelerometer_lis302/Makefile src/plugins/alsa_audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/thinkpad_powercontrol/Makefile src/plugins/openmoko_powercontrol/Makefile tests/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -13218,10 +13248,13 @@ do
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
+    "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/lib/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/Makefile" ;;
     "src/bin/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/Makefile" ;;
     "src/plugins/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/Makefile" ;;
+    "src/plugins/accelerometer/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/accelerometer/Makefile" ;;
+    "src/plugins/accelerometer_lis302/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/accelerometer_lis302/Makefile" ;;
     "src/plugins/alsa_audio/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/alsa_audio/Makefile" ;;
     "src/plugins/kernel26_display/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kernel26_display/Makefile" ;;
     "src/plugins/kernel26_leds/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kernel26_leds/Makefile" ;;

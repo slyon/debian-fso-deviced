@@ -83,7 +83,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
     private FsoFramework.SoundDevice device;
     private HashMap<string,BunchOfMixerControls> allscenarios;
     private string currentscenario;
-    private Queue<string> scenarios;
+    private GLib.Queue<string> scenarios;
 
     //private Mutex mutex;
 
@@ -98,12 +98,14 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
         // init sounds
         sounds = new HashMap<string,PlayingSound>( str_hash, str_equal );
-        Canberra.Context.create( &context );
+        Canberra.Context.create( out context );
         eventfd = new FsoFramework.Async.EventFd( 0, onAsyncEvent );
 
+        // init scenarios
         initScenarios();
         if ( currentscenario != "" )
             device.setAllMixerControls( allscenarios[currentscenario].controls );
+        scenarios = new GLib.Queue<string>();
 
         //mutex = new Mutex();
 
@@ -122,7 +124,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
      * might result in a deadlock. Instead it may only be used to asynchronously signal
      * some kind of notification object (semaphore, message queue, ...).
      */
-    public void onPlayingSoundFinished( Canberra.Context context, uint32 id, Canberra.Error code )
+    public void onPlayingSoundFinished( Canberra.Context context, uint32 id, int code )
     {
         message( "number of keys in hashmap = %d", sounds.size );
         //mutex.lock();
@@ -135,7 +137,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
         sound.finished = true;
 
-        if ( code == Canberra.Error.CANCELED || sound.loop == 0 )
+        if ( (Canberra.Error)code == Canberra.Error.CANCELED || sound.loop == 0 )
         {
             message( "removing sound w/ id %0x", id );
             sounds.remove( name );
@@ -160,10 +162,10 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
             sound.finished = false;
 
             Canberra.Proplist p = null;
-            Canberra.Proplist.create( &p );
+            Canberra.Proplist.create( out p );
             p.sets( Canberra.PROP_MEDIA_FILENAME, sound.name );
 
-            Canberra.Error res = context.play_full( Quark.from_string( sound.name ), p, onPlayingSoundFinished );
+            Canberra.Error res = (Canberra.Error) context.play_full( Quark.from_string( sound.name ), p, onPlayingSoundFinished );
         }
         else
         {
@@ -240,30 +242,45 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
     }
 
     //
-    // DBUS API
+    // FreeSmartphone.Device.Sound (DBUS API)
     //
 
     //
     // Scenario
-    public string[] get_available_scenarios() throws DBus.Error
+    public async string[] get_available_scenarios() throws DBus.Error
     {
         string[] list = {};
-        foreach ( var key in allscenarios.get_keys() )
+        foreach ( var key in allscenarios.keys )
             list += key;
         return list;
     }
 
-    public HashTable<string,Value?> get_info() throws DBus.Error
+    public async HashTable<string,Value?> get_info() throws DBus.Error
     {
-        return new HashTable<string,Value?>( str_hash, str_equal );
+        var dict = new HashTable<string,Value?>( str_hash, str_equal );
+
+        /*
+        var value = Value( typeof(string[] ) );
+        string[] formats = { "wav" };
+        value.take_
+        value = formats;
+
+        /*
+        dict.insert( "formats", value );
+        Value scenario = get_scenario();
+        dict.insert( "scenario", value );
+        Value scenarios = get_available_scenarios();
+        dict.insert( "scenarios", value );
+        */
+        return dict;
     }
 
-    public string get_scenario() throws DBus.Error
+    public async string get_scenario() throws DBus.Error
     {
         return currentscenario;
     }
 
-    public string pull_scenario() throws FreeSmartphone.Device.AudioError, DBus.Error
+    public async string pull_scenario() throws FreeSmartphone.Device.AudioError, DBus.Error
     {
         var scenario = scenarios.pop_head();
         if ( scenario == null )
@@ -272,15 +289,15 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         return scenario;
     }
 
-    public void push_scenario( string scenario ) throws DBus.Error
+    public async void push_scenario( string scenario ) throws DBus.Error
     {
         scenarios.push_head( scenario );
         set_scenario( scenario );
     }
 
-    public void set_scenario( string scenario ) throws /* FreeSmartphone.Error, */ DBus.Error
+    public async void set_scenario( string scenario ) throws /* FreeSmartphone.Error, */ DBus.Error
     {
-        if ( !( scenario in allscenarios.get_keys() ) )
+        if ( !( scenario in allscenarios.keys ) )
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Could not find scenario %s".printf( scenario ) );
 
         assert ( device != null );
@@ -290,23 +307,18 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
     //
     // Sound
-    public string[] get_supported_formats() throws DBus.Error
-    {
-        return { "*.wav" };
-    }
-
-    public void play_sound( string name, int loop, int length ) throws FreeSmartphone.Device.AudioError, DBus.Error
+    public async void play_sound( string name, int loop, int length ) throws FreeSmartphone.Device.AudioError, DBus.Error
     {
         PlayingSound sound = sounds[name];
         if ( sound != null )
             throw new FreeSmartphone.Device.AudioError.ALREADY_PLAYING( "%s is already playing".printf( name ) );
 
         Canberra.Proplist p = null;
-        Canberra.Proplist.create( &p );
+        Canberra.Proplist.create( out p );
         p.sets( Canberra.PROP_MEDIA_FILENAME, name );
 
         //message( "canberra context.play_full %s (%0x)", name, Quark.from_string( name ) );
-        Canberra.Error res = context.play_full( Quark.from_string( name ), p, onPlayingSoundFinished );
+        Canberra.Error res = (Canberra.Error) context.play_full( Quark.from_string( name ), p, onPlayingSoundFinished );
 
         if ( res != Canberra.SUCCESS )
         {
@@ -316,22 +328,22 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         sounds[name] = new PlayingSound( name, loop, length );
     }
 
-    public void stop_all_sounds() throws DBus.Error
+    public async void stop_all_sounds() throws DBus.Error
     {
-        foreach ( var name in sounds.get_keys() )
+        foreach ( var name in sounds.keys )
         {
             //message( "stopping sound '%s' (%0x)", name, Quark.from_string( name ) );
             stop_sound( name );
         }
     }
 
-    public void stop_sound( string name ) throws DBus.Error
+    public async void stop_sound( string name ) throws DBus.Error
     {
         PlayingSound sound = sounds[name];
         if ( sound == null )
             return;
 
-        Canberra.Error res = context.cancel( Quark.from_string( name ) );
+        Canberra.Error res = (Canberra.Error) context.cancel( Quark.from_string( name ) );
         logger.debug( "cancelling %s (%0x) result: %s".printf( sound.name, Quark.from_string( name ), Canberra.strerror( res ) ) );
     }
 

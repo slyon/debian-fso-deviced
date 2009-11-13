@@ -111,6 +111,8 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
 
     private string[] states;
 
+    private FreeSmartphone.Device.IdleState displayResourcePreventState;
+
     static construct
     {
         buffer = new char[BUFFER_SIZE];
@@ -123,11 +125,14 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
 
         Idle.add( onIdle );
 
-            // FIXME: Reconsider using /org/freesmartphone/Device/Input instead of .../IdleNotifier
-            subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-            subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                            "%s/0".printf( FsoFramework.Device.IdleNotifierServicePath ),
-                                            this );
+        // FIXME: Reconsider using /org/freesmartphone/Device/Input instead of .../IdleNotifier
+        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
+        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
+                                        "%s/0".printf( FsoFramework.Device.IdleNotifierServicePath ),
+                                        this );
+
+        var display_resource_allows_dim = config.boolValue( KERNEL_IDLE_PLUGIN_NAME, "display_resource_allows_dim", false );
+        displayResourcePreventState = display_resource_allows_dim ? FreeSmartphone.Device.IdleState.IDLE_PRELOCK : FreeSmartphone.Device.IdleState.IDLE_DIM;
     }
 
     public override string repr()
@@ -150,7 +155,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
     {
         var ignore = false;
 
-        var length = Posix.ioctl( fd, Linux26.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
+        var length = Posix.ioctl( fd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
         if ( length > 0 )
         {
             var product = _cleanBuffer( length );
@@ -162,7 +167,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
                 }
             }
         }
-        length = Posix.ioctl( fd, Linux26.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
+        length = Posix.ioctl( fd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
         if ( length > 0 )
         {
             var phys = _cleanBuffer( length );
@@ -177,7 +182,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         return ignore;
     }
 
-    public void onResourceChanged( FsoDevice.AbstractSimpleResource r, bool on )
+    public void onResourceChanged( FsoFramework.AbstractDBusResource r, bool on )
     {
         if ( r is CpuResource )
         {
@@ -203,7 +208,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
             if (on)
             {
                 // prohibit sending of idle_dim (and later)
-                idlestatus.timeouts[FreeSmartphone.Device.IdleState.IDLE_DIM] = -1;
+                idlestatus.timeouts[displayResourcePreventState] = -1;
                 // relaunch timer, if necessary
                 if ( (int)idlestatus.status > (int)FreeSmartphone.Device.IdleState.IDLE )
                     idlestatus.onState( FreeSmartphone.Device.IdleState.IDLE );
@@ -211,7 +216,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
             else
             {
                 // allow sending of idle_dim (and later)
-                idlestatus.timeouts[FreeSmartphone.Device.IdleState.IDLE_DIM] = config.intValue( KERNEL_IDLE_PLUGIN_NAME, states[FreeSmartphone.Device.IdleState.IDLE_DIM], 10 );
+                idlestatus.timeouts[displayResourcePreventState] = config.intValue( KERNEL_IDLE_PLUGIN_NAME, states[displayResourcePreventState], 10 );
                 // relaunch timer, if necessary
                 if ( idlestatus.status == FreeSmartphone.Device.IdleState.IDLE )
                     idlestatus.onState( FreeSmartphone.Device.IdleState.IDLE );
@@ -238,11 +243,32 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         syncNodesToWatch();
         registerInputWatches();
 
+        FsoFramework.BaseKObjectNotifier.addMatch( "add", "input", onInputNotification );
+        FsoFramework.BaseKObjectNotifier.addMatch( "remove", "input", onInputNotification );
+
         return false;
+    }
+
+    public void onInputNotification( HashTable<string,string> properties )
+    {
+        var devpath = properties.lookup( "DEVPATH" );
+        if ( devpath != null && "event" in devpath )
+        {
+            resetTimeouts();
+            syncNodesToWatch();
+            registerInputWatches();
+        }
     }
 
     private void syncNodesToWatch()
     {
+        // close, if already open
+        if ( fds != null )
+        {
+            foreach ( var fd in fds )
+                Posix.close( fd );
+        }
+
         fds = new int[] {};
         // scan sysfs path
         var dir = Dir.open( sysfsnode );
@@ -271,25 +297,27 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
 
     private void registerInputWatches()
     {
+        // should auto-unref and close channels
         channels = new IOChannel[] {};
 
         foreach ( var fd in fds )
         {
             var channel = new IOChannel.unix_new( fd );
+            channel.set_close_on_unref( true );
             channel.add_watch( IOCondition.IN, onInputEvent );
             channels += channel;
         }
     }
 
-    private void _handleInputEvent( ref Linux26.Input.Event ev )
+    private void _handleInputEvent( ref Linux.Input.Event ev )
     {
         idlestatus.onState( FreeSmartphone.Device.IdleState.BUSY );
     }
 
     public bool onInputEvent( IOChannel source, IOCondition condition )
     {
-        Linux26.Input.Event ev = {};
-        var bytesread = Posix.read( source.unix_get_fd(), &ev, sizeof(Linux26.Input.Event) );
+        Linux.Input.Event ev = {};
+        var bytesread = Posix.read( source.unix_get_fd(), &ev, sizeof(Linux.Input.Event) );
         if ( bytesread == 0 )
         {
             logger.warning( "could not read from input device fd %d.".printf( source.unix_get_fd() ) );
@@ -297,7 +325,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         }
 
         // only honor keys and buttons for now
-        if ( ev.type == Linux26.Input.EV_KEY )
+        if ( ev.type == Linux.Input.EV_KEY )
         {
             //logger.debug( "input ev %d, %d, %d, %d".printf( source.unix_get_fd(), ev.type, ev.code, ev.value ) );
             _handleInputEvent( ref ev );
@@ -307,14 +335,14 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
     }
 
     //
-    // DBUS API
+    // FreeSnmartphone.Device.IdleNotifier (DBUS API)
     //
-    public FreeSmartphone.Device.IdleState get_state() throws DBus.Error
+    public async FreeSmartphone.Device.IdleState get_state() throws DBus.Error
     {
         return 0;
     }
 
-    public GLib.HashTable<string,int> get_timeouts() throws DBus.Error
+    public async GLib.HashTable<string,int> get_timeouts() throws DBus.Error
     {
         var dict = new GLib.HashTable<string,int>( str_hash, str_equal );
 
@@ -325,12 +353,12 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         return dict;
     }
 
-    public void set_state( FreeSmartphone.Device.IdleState status ) throws DBus.Error
+    public async void set_state( FreeSmartphone.Device.IdleState status ) throws DBus.Error
     {
         idlestatus.onState( status );
     }
 
-    public void set_timeout( FreeSmartphone.Device.IdleState status, int timeout ) throws DBus.Error
+    public async void set_timeout( FreeSmartphone.Device.IdleState status, int timeout ) throws DBus.Error
     {
         idlestatus.timeouts[status] = timeout;
     }
@@ -340,7 +368,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
 /**
  * Implementation of org.freesmartphone.Resource for the Display Resource
  **/
-class DisplayResource : FsoDevice.AbstractSimpleResource
+class DisplayResource : FsoFramework.AbstractDBusResource
 {
     internal bool on;
 
@@ -349,7 +377,7 @@ class DisplayResource : FsoDevice.AbstractSimpleResource
         base( "Display", subsystem );
     }
 
-    public override void _enable()
+    public override async void enableResource()
     {
         if (on)
             return;
@@ -358,7 +386,7 @@ class DisplayResource : FsoDevice.AbstractSimpleResource
         on = true;
     }
 
-    public override void _disable()
+    public override async void disableResource()
     {
         if (!on)
             return;
@@ -366,13 +394,21 @@ class DisplayResource : FsoDevice.AbstractSimpleResource
         instance.onResourceChanged( this, false );
         on = false;
     }
+
+    public override async void suspendResource()
+    {
+    }
+
+    public override async void resumeResource()
+    {
+    }
 }
 
 
 /**
  * Implementation of org.freesmartphone.Resource for the CPU Resource
  **/
-class CpuResource : FsoDevice.AbstractSimpleResource
+class CpuResource : FsoFramework.AbstractDBusResource
 {
     internal bool on;
 
@@ -381,7 +417,7 @@ class CpuResource : FsoDevice.AbstractSimpleResource
         base( "CPU", subsystem );
     }
 
-    public override void _enable()
+    public override async void enableResource()
     {
         if (on)
             return;
@@ -390,13 +426,21 @@ class CpuResource : FsoDevice.AbstractSimpleResource
         on = true;
     }
 
-    public override void _disable()
+    public override async void disableResource()
     {
         if (!on)
             return;
         logger.debug( "disabling..." );
         instance.onResourceChanged( this, false );
         on = false;
+    }
+
+    public override async void suspendResource()
+    {
+    }
+
+    public override async void resumeResource()
+    {
     }
 }
 
