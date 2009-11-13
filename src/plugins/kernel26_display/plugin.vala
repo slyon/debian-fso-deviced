@@ -44,7 +44,7 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
         this.sysfsnode = sysfsnode;
         this.max_brightness = FsoFramework.FileHandling.read( this.sysfsnode + "/max_brightness" ).to_int();
 
-        this.current_brightness = get_brightness();
+        this.current_brightness = _getBrightness();
 
         fb_fd = Posix.open( dev_fb0, Posix.O_RDONLY );
         if ( fb_fd == -1 )
@@ -90,15 +90,21 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
         return (int)value;
     }
 
+    private int _getBrightness()
+    {
+        var value = FsoFramework.FileHandling.read( this.sysfsnode + "/actual_brightness" ).to_int();
+        return _valueToPercent( value );
+    }
+
     //
-    // DBUS API
+    // FreeSmartphone.Device.Display (DBUS API)
     //
-    public string get_name()
+    public async string get_name()
     {
         return Path.get_basename( sysfsnode );
     }
 
-    public void set_brightness( int brightness )
+    public async void set_brightness( int brightness )
     {
         var value = _percentToValue( brightness );
 
@@ -114,24 +120,23 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
         logger.debug( "Brightness set to %d".printf( brightness ) );
     }
 
-    public int get_brightness()
+    public async int get_brightness()
     {
-        var value = FsoFramework.FileHandling.read( this.sysfsnode + "/actual_brightness" ).to_int();
-        return _valueToPercent( value );
+        return _getBrightness();
     }
 
-    public bool get_backlight_power()
+    public async bool get_backlight_power()
     {
         return FsoFramework.FileHandling.read( this.sysfsnode + "/bl_power" ).to_int() == 0;
     }
 
-    public void set_backlight_power( bool power )
+    public async void set_backlight_power( bool power )
     {
         var value = power ? "0" : "1";
         FsoFramework.FileHandling.write( value, this.sysfsnode + "/bl_power" );
     }
 
-    public HashTable<string, Value?> get_info()
+    public async HashTable<string, Value?> get_info()
     {
         string _leaf;
         var val = Value( typeof(string) );
