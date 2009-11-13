@@ -61,8 +61,8 @@ am__DEPENDENCIES_1 =
 libfsodevice_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 am__objects_1 =
-am__objects_2 = dispatcher.lo powercontrol.lo resource.lo \
-	$(am__objects_1)
+am__objects_2 = accelerometer.lo dispatcher.lo powercontrol.lo \
+	resource.lo $(am__objects_1)
 am_libfsodevice_la_OBJECTS = $(am__objects_1) $(am__objects_2) \
 	$(am__objects_1)
 libfsodevice_la_OBJECTS = $(am_libfsodevice_la_OBJECTS)
@@ -103,7 +103,9 @@ CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DBUS_CFLAGS = @DBUS_CFLAGS@
+DBUS_DIR = @DBUS_DIR@
 DBUS_LIBS = @DBUS_LIBS@
+DBUS_SERVICE_DIR = @DBUS_SERVICE_DIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
 DSYMUTIL = @DSYMUTIL@
@@ -231,6 +233,7 @@ VALAC_ARGS = \
 	--pkg glib-2.0 \
 	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
+	--pkg fsoresource-2.0 \
 	--pkg fsoframework-2.0 \
 	--header fsodevice.h \
 	--library fsodevice-2.0
@@ -240,6 +243,7 @@ lib_LTLIBRARIES = \
 	libfsodevice.la
 
 libfsodevice_la_VALASOURCES = \
+	accelerometer.vala \
 	dispatcher.vala \
 	powercontrol.vala \
 	resource.vala \
@@ -343,6 +347,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/accelerometer.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dispatcher.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/powercontrol.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/resource.Plo@am__quote@
