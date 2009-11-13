@@ -21,41 +21,37 @@ using GLib;
 
 namespace FsoDevice {
 
-/**
- * BasePowerControlResource: Exports a BasePowerControl instance via the DBus Resource API
- */
-public class BasePowerControlResource : FsoFramework.AbstractDBusResource
+public abstract class BaseAccelerometer : FsoFramework.AbstractObject
 {
-    private weak BasePowerControl bpc;
+    public delegate void AccelerationFunc( int[] axis );
 
-    public BasePowerControlResource( BasePowerControl bpc, string name, FsoFramework.Subsystem subsystem )
+    public AccelerationFunc accelerationFunc;
+
+    public BaseAccelerometer()
     {
-        base( name, subsystem );
-        this.bpc = bpc;
     }
 
-    public override async void enableResource()
+    public void setDelegate( AccelerationFunc f )
     {
-        logger.debug( "enabling..." );
-        bpc.setPower( true );
+        accelerationFunc = f;
     }
 
-    public override async void disableResource()
+    public void setThreshold( int mg )
     {
-        logger.debug( "disabling..." );
-        bpc.setPower( false );
     }
 
-    public override async void suspendResource()
+    public void setRate( uint ms )
     {
-        logger.debug( "suspending..." );
     }
 
-    public override async void resumeResource()
+    public abstract void start();
+
+    public abstract void stop();
+
+    public override string repr()
     {
-        logger.debug( "resuming..." );
+        return "<>";
     }
 }
 
-
-} /* namespace FsoDevice */
+}
