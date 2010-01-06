@@ -17,7 +17,6 @@
  *
  */
 
-using GLib;
 using Gee;
 
 const string FSO_ALSA_CONF_PATH = "/etc/freesmartphone/alsa/default.conf";
@@ -27,65 +26,19 @@ namespace Alsa
 {
 
 /**
- * Helper class, encapsulating a sound that's currently playing
- **/
-public class PlayingSound
-{
-    public string name;
-    public int loop;
-    public int length;
-    public bool finished;
-
-    public uint watch;
-
-    public PlayingSound( string name, int loop, int length )
-    {
-        this.name = name;
-        this.loop = loop;
-        this.length = length;
-
-        if ( length > 0 )
-            watch = Timeout.add_seconds( length, onTimeout );
-    }
-
-    public bool onTimeout()
-    {
-        instance.stop_sound( name );
-        return false;
-    }
-
-    ~PlayingSound()
-    {
-        if ( watch > 0 )
-            Source.remove( watch );
-    }
-}
-
-/**
- * Scenario
- **/
-class BunchOfMixerControls
-{
-    public FsoFramework.MixerControl[] controls;
-}
-
-/**
  * Alsa Audio Player
  **/
 class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 {
+    private const string MODULE_NAME = "fsodevice.alsa_audio";
+
     private FsoFramework.Subsystem subsystem;
-
-    private Canberra.Context context;
-    private HashMap<string,PlayingSound> sounds;
-    private FsoFramework.Async.EventFd eventfd;
-
     private FsoFramework.SoundDevice device;
-    private HashMap<string,BunchOfMixerControls> allscenarios;
+    private HashMap<string,FsoFramework.BunchOfMixerControls> allscenarios;
     private string currentscenario;
     private GLib.Queue<string> scenarios;
-
-    //private Mutex mutex;
+    private Gee.HashMap<string,FsoDevice.AudioPlayer> players;
+    private string playertypes;
 
     public AudioPlayer( FsoFramework.Subsystem subsystem )
     {
@@ -96,84 +49,80 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
                                          FsoFramework.Device.AudioServicePath,
                                          this );
 
-        // init sounds
-        sounds = new HashMap<string,PlayingSound>( str_hash, str_equal );
-        Canberra.Context.create( out context );
-        eventfd = new FsoFramework.Async.EventFd( 0, onAsyncEvent );
+        // gather requested player types and instanciate object
+        players = new Gee.HashMap<string,FsoDevice.AudioPlayer>();
+        var playernames = config.stringListValue( MODULE_NAME, "player_type", {} );
+
+        playertypes = "";
+
+        foreach ( var playername in playernames )
+        {
+            var typename = "";
+
+            switch ( playername )
+            {
+                case "alsa":
+                    typename = "PlayerLibAlsa";
+                    break;
+                case "canberra":
+                    typename = "PlayerLibCanberra";
+                    break;
+                case "gstreamer":
+                    typename = "PlayerGstreamer";
+                    break;
+                default:
+                    typename = "PlayerUnknown";
+                    break;
+            }
+            var playertyp = GLib.Type.from_name( typename );
+            if ( playertyp == GLib.Type.INVALID )
+            {
+                logger.warning( @"Can't instanciate requested player type $typename" );
+            }
+            else
+            {
+                var player = (FsoDevice.AudioPlayer) GLib.Object.new( playertyp );
+                foreach ( var format in player.supportedFormats() )
+                {
+                    if ( players[format] == null ) // might have already been claimed
+                    {
+                        assert( logger.debug( @"Registering $playername ($typename) to handle format $format" ) );
+                        players[format] = player;
+                    }
+                    else
+                    {
+                        assert( logger.debug( @"Can't register $playername ($typename) to handle format $format (already handled)" ) );
+                    }
+                }
+                playertypes += @"%s$typename".printf( playertypes != "" ? "," : "" );
+            }
+        }
+
+        if ( players.size == 0 )
+        {
+            logger.warning( "No player_type requested or available; will not be able to play audio" );
+            var player = new FsoDevice.NullPlayer();
+            foreach ( var format in player.supportedFormats() )
+            {
+                players[format] = player;
+                playertypes = "NullPlayer";
+            }
+        }
 
         // init scenarios
         initScenarios();
-        if ( currentscenario != "" )
+        if ( currentscenario != "unknown" )
+        {
             device.setAllMixerControls( allscenarios[currentscenario].controls );
+        }
         scenarios = new GLib.Queue<string>();
-
-        //mutex = new Mutex();
 
         logger.info( "created." );
     }
 
     public override string repr()
     {
-        return "<ALSA>";
-    }
-
-    /* CAUTION: Note the following quote from the libcanberra API documentation:
-     * "The context this callback is called in is undefined, it might or might not be
-     * called from a background thread, and from any stack frame. The code implementing
-     * this function may not call any libcanberra API call from this callback -- this
-     * might result in a deadlock. Instead it may only be used to asynchronously signal
-     * some kind of notification object (semaphore, message queue, ...).
-     */
-    public void onPlayingSoundFinished( Canberra.Context context, uint32 id, int code )
-    {
-        message( "number of keys in hashmap = %d", sounds.size );
-        //mutex.lock();
-
-        message( "onPlayingSoundFinished w/ id: %0x", id );
-        var name = ( (Quark) id ).to_string();
-        logger.debug( "Sound finished with name %s (%0x), code %s".printf( name, id, Canberra.strerror( code ) ) );
-        PlayingSound sound = sounds[name];
-        assert ( sound != null );
-
-        sound.finished = true;
-
-        if ( (Canberra.Error)code == Canberra.Error.CANCELED || sound.loop == 0 )
-        {
-            message( "removing sound w/ id %0x", id );
-            sounds.remove( name );
-            //FIXME send signal
-        }
-        else
-        {
-            // wake up mainloop to repeat
-            eventfd.write( (int)id );
-        }
-
-        //mutex.unlock();
-    }
-
-    public bool onAsyncEvent( IOChannel channel, IOCondition condition )
-    {
-        uint id = eventfd.read();
-        var name = ( (Quark) id ).to_string();
-        PlayingSound sound = sounds[name];
-        if ( sound.finished && sound.loop-- > 0 )
-        {
-            sound.finished = false;
-
-            Canberra.Proplist p = null;
-            Canberra.Proplist.create( out p );
-            p.sets( Canberra.PROP_MEDIA_FILENAME, sound.name );
-
-            Canberra.Error res = (Canberra.Error) context.play_full( Quark.from_string( sound.name ), p, onPlayingSoundFinished );
-        }
-        else
-        {
-            message( "removing sound w/ id %0x", id );
-            sounds.remove( name );
-            //FIXME send stopped signal
-        }
-        return true; // MainLoop: call me again
+        return playertypes != null ? @"<$playertypes>" : "<>";
     }
 
     private void addScenario( string scenario, File file )
@@ -193,8 +142,7 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
                 controls += control;
             }
             logger.debug( "Scenario %s successfully read from file %s".printf( scenario, file.get_path() ) );
-            var bunch = new BunchOfMixerControls();
-            bunch.controls = controls;
+            var bunch = new FsoFramework.BunchOfMixerControls( controls );
             allscenarios[scenario] = bunch;
         }
         catch (IOError e)
@@ -205,15 +153,15 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
     private void initScenarios()
     {
-        allscenarios = new HashMap<string,BunchOfMixerControls>( str_hash, str_equal );
-        currentscenario = "";
+        allscenarios = new HashMap<string,FsoFramework.BunchOfMixerControls>( str_hash, str_equal );
+        currentscenario = "unknown";
 
         // init scenarios
         FsoFramework.SmartKeyFile alsaconf = new FsoFramework.SmartKeyFile();
         if ( alsaconf.loadFromFile( FSO_ALSA_CONF_PATH ) )
         {
             device = FsoFramework.SoundDevice.create( alsaconf.stringValue( "alsa", "cardname", "default" ) );
-            currentscenario = alsaconf.stringValue( "alsa", "default_scenario", "stereoout" );
+            var defaultscenario = alsaconf.stringValue( "alsa", "default_scenario", "stereoout" );
 
             var sections = alsaconf.sectionsWithPrefix( "scenario." );
             foreach ( var section in sections )
@@ -234,10 +182,80 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
                     }
                 }
             }
+
+            if ( defaultscenario in allscenarios )
+            {
+                push_scenario( defaultscenario ); // ASYNC
+            }
+            else
+            {
+                logger.warning( "Default scenario not found; can't push it to scenario stack" );
+            }
+            // listen for changes
+            FsoFramework.INotifier.add( FSO_ALSA_DATA_PATH, Linux.InotifyMaskFlags.MODIFY, onModifiedScenario );
         }
         else
         {
             logger.warning( "Could not load %s. No scenarios available.".printf( FSO_ALSA_CONF_PATH ) );
+        }
+    }
+
+    private void updateScenarioIfChanged( string scenario )
+    {
+        if ( currentscenario != scenario )
+        {
+            assert ( device != null );
+            device.setAllMixerControls( allscenarios[scenario].controls );
+
+            currentscenario = scenario;
+            this.scenario( currentscenario, "N/A" ); // DBUS SIGNAL
+        }
+    }
+
+    private void onModifiedScenario( Linux.InotifyMaskFlags flags, uint32 cookie, string? name )
+    {
+#if DEBUG
+        debug( "onModifiedScenario: %s", name );
+#endif
+        assert( name != null );
+
+        if ( ! ( name in allscenarios ) )
+        {
+            assert( logger.debug( @"$name is not a recognized scenario. Ignoring" ) );
+            return;
+        }
+
+        if ( name == currentscenario )
+        {
+            logger.info( @"Scenario $name has been changed (being also the current scenario); invalidating cache and reloading" );
+            var file = File.new_for_path( Path.build_filename( FSO_ALSA_DATA_PATH, name ) );
+            if ( !file.query_exists(null) )
+            {
+                logger.warning( @"Scenario file $(file.get_path()) doesn't exist. Ignoring." );
+            }
+            else
+            {
+                addScenario( name, file );
+                device.setAllMixerControls( allscenarios[name].controls );
+            }
+        }
+        else
+        {
+            logger.info( @"Scenario $name has been changed; invalidating cache for this." );
+            // save current one
+            var scene = new FsoFramework.BunchOfMixerControls( device.allMixerControls() );
+            // reload changed one from disk
+            var file = File.new_for_path( Path.build_filename( FSO_ALSA_DATA_PATH, name ) );
+            if ( !file.query_exists(null) )
+            {
+                logger.warning( @"Scenario file $(file.get_path()) doesn't exist. Ignoring." );
+            }
+            else
+            {
+                addScenario( name, file );
+            }
+            // restore saved one
+            device.setAllMixerControls( scene.controls );
         }
     }
 
@@ -282,71 +300,84 @@ class AudioPlayer : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
     public async string pull_scenario() throws FreeSmartphone.Device.AudioError, DBus.Error
     {
-        var scenario = scenarios.pop_head();
+        scenarios.pop_head();
+        var scenario = scenarios.peek_head();
         if ( scenario == null )
-            throw new FreeSmartphone.Device.AudioError.SCENARIO_STACK_UNDERFLOW( "No scenario to pull" );
-        set_scenario( scenario );
+        {
+            throw new FreeSmartphone.Device.AudioError.SCENARIO_STACK_UNDERFLOW( "No scenario left to activate" );
+        }
+        yield set_scenario( scenario );
         return scenario;
     }
 
-    public async void push_scenario( string scenario ) throws DBus.Error
+    public async void push_scenario( string scenario ) throws FreeSmartphone.Error, DBus.Error
     {
+        // try to set this scenario, will error out if not successful
+        yield set_scenario( scenario );
+        // push on the stack
         scenarios.push_head( scenario );
-        set_scenario( scenario );
     }
 
-    public async void set_scenario( string scenario ) throws /* FreeSmartphone.Error, */ DBus.Error
+    public async void set_scenario( string scenario ) throws FreeSmartphone.Error, DBus.Error
     {
         if ( !( scenario in allscenarios.keys ) )
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Could not find scenario %s".printf( scenario ) );
 
-        assert ( device != null );
+        updateScenarioIfChanged( scenario );
+    }
 
-        device.setAllMixerControls( allscenarios[scenario].controls );
+    public async void save_scenario( string scenario ) throws FreeSmartphone.Error, DBus.Error
+    {
+        if ( !( scenario in allscenarios.keys ) )
+            throw new FreeSmartphone.Error.INVALID_PARAMETER( @"Could not find scenario $scenario" );
+
+        var scene = new FsoFramework.BunchOfMixerControls( device.allMixerControls() );
+
+        var filename = Path.build_filename( FSO_ALSA_DATA_PATH, scenario );
+        FsoFramework.FileHandling.write( scene.to_string(), filename );
     }
 
     //
     // Sound
-    public async void play_sound( string name, int loop, int length ) throws FreeSmartphone.Device.AudioError, DBus.Error
+    public async void play_sound( string name, int loop, int length ) throws FreeSmartphone.Device.AudioError, FreeSmartphone.Error, DBus.Error
     {
-        PlayingSound sound = sounds[name];
-        if ( sound != null )
-            throw new FreeSmartphone.Device.AudioError.ALREADY_PLAYING( "%s is already playing".printf( name ) );
-
-        Canberra.Proplist p = null;
-        Canberra.Proplist.create( out p );
-        p.sets( Canberra.PROP_MEDIA_FILENAME, name );
-
-        //message( "canberra context.play_full %s (%0x)", name, Quark.from_string( name ) );
-        Canberra.Error res = (Canberra.Error) context.play_full( Quark.from_string( name ), p, onPlayingSoundFinished );
-
-        if ( res != Canberra.SUCCESS )
+        var parts = name.split( "." );
+        if ( parts.length == 0 )
         {
-            throw new FreeSmartphone.Device.AudioError.PLAYER_ERROR( "Can't play song %s: %s".printf( name, Canberra.strerror( res ) ) );
+            throw new FreeSmartphone.Error.INVALID_PARAMETER( "Could not guess media format; need an extension" );
         }
-
-        sounds[name] = new PlayingSound( name, loop, length );
+        var extension = parts[ parts.length - 1 ]; // darn, I miss negative array indices
+        var player = players[extension];
+        if ( player == null )
+        {
+            throw new FreeSmartphone.Error.INVALID_PARAMETER( @"Format .$extension not handled by any player" );
+        }
+        yield player.play_sound( name, loop, length );
     }
 
     public async void stop_all_sounds() throws DBus.Error
     {
-        foreach ( var name in sounds.keys )
+        foreach ( var player in players.values )
         {
-            //message( "stopping sound '%s' (%0x)", name, Quark.from_string( name ) );
-            stop_sound( name );
+            yield player.stop_all_sounds();
         }
     }
 
-    public async void stop_sound( string name ) throws DBus.Error
+    public async void stop_sound( string name ) throws FreeSmartphone.Error, DBus.Error
     {
-        PlayingSound sound = sounds[name];
-        if ( sound == null )
-            return;
-
-        Canberra.Error res = (Canberra.Error) context.cancel( Quark.from_string( name ) );
-        logger.debug( "cancelling %s (%0x) result: %s".printf( sound.name, Quark.from_string( name ), Canberra.strerror( res ) ) );
+        var parts = name.split( "." );
+        if ( parts.length == 0 )
+        {
+            throw new FreeSmartphone.Error.INVALID_PARAMETER( "Could not guess media format; need an extension" );
+        }
+        var extension = parts[ parts.length - 1 ]; // darn, I miss negative array indices
+        var player = players[extension];
+        if ( player == null )
+        {
+            throw new FreeSmartphone.Error.INVALID_PARAMETER( @"Format .$extension not handled by any player" );
+        }
+        yield player.stop_sound( name );
     }
-
 }
 
 } /* namespace */
@@ -369,7 +400,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "input fso_register_function()" );
+    debug( "fsodevice.alsa_audio fso_register_function()" );
 }
 
 /**

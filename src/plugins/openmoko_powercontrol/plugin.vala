@@ -64,7 +64,7 @@ class UsbHostModeControl : FsoDevice.BasePowerControl
         base( Path.build_filename( sysfsnode, "hostmode" ) );
         this.subsystem = subsystem;
         this.sysfsnode = sysfsnode;
-        this.umodenode = Path.build_filename( sysfs_root, "devices", "s3c-ohci", "usb_mode" );
+        this.umodenode = Path.build_filename( sysfs_root, "devices", "platform", "s3c-ohci", "usb_mode" );
         this.name = Path.get_basename( sysfsnode );
 
         subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
@@ -137,7 +137,7 @@ internal static string sysfs_root;
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     // grab sysfs paths
-    var config = FsoFramework.theMasterKeyFile();
+    var config = FsoFramework.theConfig;
     sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
     var devices = Path.build_filename( sysfs_root, "bus", "platform", "devices" );
     var drivers = Path.build_filename( sysfs_root, "bus", "platform", "drivers" );
@@ -175,7 +175,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "input fso_register_function()" );
+    debug( "fsodevice.openmoko_powercontrol fso_register_function()" );
 }
 
 /**

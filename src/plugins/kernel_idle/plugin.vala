@@ -463,7 +463,7 @@ internal string[] ignoreByPhys;
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     // grab paths
-    var config = FsoFramework.theMasterKeyFile();
+    var config = FsoFramework.theConfig;
     dev_root = config.stringValue( "cornucopia", "dev_root", "/dev" );
     dev_input = "%s/input".printf( dev_root );
 
@@ -484,7 +484,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "input fso_register_function()" );
+    debug( "fsodevice.kernel_idle fso_register_function()" );
 }
 
 /**
