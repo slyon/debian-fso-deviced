@@ -21,13 +21,18 @@ using GLib;
 
 namespace FsoDevice {
 
-public class BasePowerControl : FreeSmartphone.Device.PowerControl, FsoFramework.AbstractObject
+public interface ISimplePowerControl : Object
+{
+    public abstract bool getPower();
+    public abstract void setPower( bool on );
+}
+
+public class BasePowerControl : ISimplePowerControl, FreeSmartphone.Device.PowerControl, FsoFramework.AbstractObject
 {
     private string powernode;
     private string onvalue;
     private string offvalue;
     private uint switchtimeout;
-
     protected static uint counter;
 
     public BasePowerControl( string? powernode = null, string onvalue = "1", string offvalue = "0", uint switchtimeout = 3 )
