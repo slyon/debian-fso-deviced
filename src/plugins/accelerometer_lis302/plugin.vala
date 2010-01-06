@@ -83,8 +83,7 @@ class AccelerometerLis302 : FsoDevice.BaseAccelerometer
         axis[1] = 0;
         axis[2] = 0;
 
-        if (accelerationFunc != null)
-            accelerationFunc( axis );
+        acceleration( 0, 0, 0 );
         return false;
     }
 
@@ -116,7 +115,7 @@ class AccelerometerLis302 : FsoDevice.BaseAccelerometer
 
     private bool onTimeout()
     {
-        accelerationFunc( axis );
+        acceleration( axis[0], axis[1], axis[2] );
         timeout = 0;
         return false; // don't call me again
     }
@@ -175,11 +174,11 @@ class AccelerometerLis302 : FsoDevice.BaseAccelerometer
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     debug( "accelerometer_lis302 fso_factory_function" );
-    return "fsodeviced.accelerometer_lis302";
+    return "fsodevice.accelerometer_lis302";
 }
 
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    // do not remove this function
+    debug( "fsodevice.accelerometer_lis302 fso_register_function" );
 }

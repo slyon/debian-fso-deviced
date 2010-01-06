@@ -1,4 +1,4 @@
-NULL = 
+NULL =
 
 AUTOMAKE_OPTIONS = subdir-objects
 
@@ -7,6 +7,7 @@ SUBDIRS = \
 	accelerometer_lis302 \
 	\
 	alsa_audio \
+	player_alsa \
 	\
 	kernel26_display \
 	kernel26_leds \
@@ -17,7 +18,19 @@ SUBDIRS = \
 	kernel_info \
 	kernel_input \
 	\
-	thinkpad_powercontrol \
 	openmoko_powercontrol \
+	thinkpad_powercontrol \
 	\
 	$(NULL)
+
+if WANT_CANBERRA
+SUBDIRS += player_canberra
+endif
+
+if WANT_GSTREAMER
+SUBDIRS += player_gstreamer
+endif
+
+if WANT_RFKILL
+SUBDIRS += kernel26_rfkill
+endif

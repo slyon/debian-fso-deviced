@@ -18,6 +18,8 @@ progs_ldadd = \
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
+	--vapidir $(top_srcdir)/vapi \
+	--pkg linux \
 	--pkg glib-2.0 \
 	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
@@ -28,15 +30,15 @@ VALAC_ARGS = \
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsodevice
-modlibexec_LTLIBRARIES = thinkpad_powercontrol.la
-thinkpad_powercontrol_la_SOURCES = plugin.c
-thinkpad_powercontrol_la_VALASOURCES = plugin.vala
-$(thinkpad_powercontrol_la_SOURCES): $(thinkpad_powercontrol_la_VALASOURCES)
+modlibexec_LTLIBRARIES = kernel26_rfkill.la
+kernel26_rfkill_la_SOURCES = plugin.c
+kernel26_rfkill_la_VALASOURCES = plugin.vala
+$(kernel26_rfkill_la_SOURCES): $(kernel26_rfkill_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
-thinkpad_powercontrol_la_LIBADD = $(progs_ldadd)
-thinkpad_powercontrol_la_LDFLAGS = -no-undefined -module -avoid-version
-thinkpad_powercontrol_la_LIBTOOLFLAGS = --tag=disable-static
+kernel26_rfkill_la_LIBADD = $(progs_ldadd)
+kernel26_rfkill_la_LDFLAGS = -no-undefined -module -avoid-version
+kernel26_rfkill_la_LIBTOOLFLAGS = --tag=disable-static
 
 CLEANFILES = \
     *.c \

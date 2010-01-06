@@ -63,7 +63,7 @@ internal static string procfs_root;
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     // grab sysfs paths
-    var config = FsoFramework.theMasterKeyFile();
+    var config = FsoFramework.theConfig;
     procfs_root = config.stringValue( "cornucopia", "procfs_root", "/proc" );
 
     var bluetooth = Path.build_filename( procfs_root, "bluetooth" );
@@ -80,7 +80,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "input fso_register_function()" );
+    debug( "fsodevice.thinkpad_powercontrol fso_register_function()" );
 }
 
 /**
