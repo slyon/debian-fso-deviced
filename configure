@@ -11569,7 +11569,7 @@ fi
 
 ##############################################################################
 # output
-ac_config_files="$ac_config_files Makefile data/Makefile src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/accelerometer/Makefile src/plugins/accelerometer_lis302/Makefile src/plugins/alsa_audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rfkill/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/openmoko_powercontrol/Makefile src/plugins/player_alsa/Makefile src/plugins/player_canberra/Makefile src/plugins/player_gstreamer/Makefile src/plugins/thinkpad_powercontrol/Makefile tests/Makefile"
+ac_config_files="$ac_config_files Makefile data/Makefile data/org.freesmartphone.odeviced.service src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/accelerometer/Makefile src/plugins/accelerometer_lis302/Makefile src/plugins/alsa_audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rfkill/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/openmoko_powercontrol/Makefile src/plugins/player_alsa/Makefile src/plugins/player_canberra/Makefile src/plugins/player_gstreamer/Makefile src/plugins/thinkpad_powercontrol/Makefile tests/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -12554,6 +12554,7 @@ do
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
     "data/Makefile") CONFIG_FILES="$CONFIG_FILES data/Makefile" ;;
+    "data/org.freesmartphone.odeviced.service") CONFIG_FILES="$CONFIG_FILES data/org.freesmartphone.odeviced.service" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/lib/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/Makefile" ;;
     "src/bin/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/Makefile" ;;
