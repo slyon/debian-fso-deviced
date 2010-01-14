@@ -1,0 +1,5 @@
+etc/dbus-1/system.d/fsodeviced.conf
+usr/sbin/*
+usr/lib/libfsodevice.so.0*
+usr/lib/cornucopia/modules/fsodevice/*.so
+usr/share/dbus-1/system-services/org.freesmartphone.odeviced.service
