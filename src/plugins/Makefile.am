@@ -1,3 +1,5 @@
+include $(top_srcdir)/Makefile.decl
+
 NULL =
 
 AUTOMAKE_OPTIONS = subdir-objects
@@ -6,7 +8,8 @@ SUBDIRS = \
 	accelerometer \
 	accelerometer_lis302 \
 	\
-	alsa_audio \
+	audio \
+	router_alsa \
 	player_alsa \
 	\
 	kernel26_display \

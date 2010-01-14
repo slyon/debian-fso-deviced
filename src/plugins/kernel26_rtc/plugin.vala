@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -250,7 +250,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "fsodevice.kernel26_rtc fso_register_function()" );
+    FsoFramework.theLogger.debug( "fsodevice.kernel26_rtc fso_register_function()" );
 }
 
 /**

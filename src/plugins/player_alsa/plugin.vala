@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -30,7 +30,9 @@ class Player.LibAlsa : FsoDevice.BaseAudioPlayer
 
     public void onChildWatchEvent( Pid pid, int status )
     {
+#if DEBUG
         debug( "CHILD WATCH EVENT FOR %d: %d", (int)pid, status );
+#endif
         Process.close_pid( pid );
         Posix.kill( (Posix.pid_t)pid, Posix.SIGTERM );
 
@@ -93,7 +95,9 @@ class Player.LibAlsa : FsoDevice.BaseAudioPlayer
     {
         foreach ( var name in sounds.keys )
         {
-            //message( "stopping sound '%s' (%0x)", name, Quark.from_string( name ) );
+#if DEBUG
+            message( "stopping sound '%s' (%0x)", name, Quark.from_string( name ) );
+#endif
             yield stop_sound( name );
         }
     }
@@ -118,14 +122,14 @@ class Player.LibAlsa : FsoDevice.BaseAudioPlayer
  **/
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
-    // instances will be created on demand by alsa_audio
+    // instances will be created on demand by fsodevice.audio
     return "fsodevice.player_alsa";
 }
 
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "fsodevice.player_alsa fso_register_function()" );
+    FsoFramework.theLogger.debug( "fsodevice.player_alsa fso_register_function()" );
 }
 
 /**
