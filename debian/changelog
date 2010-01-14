@@ -1,8 +1,8 @@
-fso-deviced (0+git20100105-1) UNRELEASED; urgency=low
+fso-deviced (0+git20100110-1) UNRELEASED; urgency=low
 
   * New upstream snapshot
 
- -- Heiko Stuebner <heiko@sntech.de>  Wed, 06 Jan 2009 21:41:10 +0100
+ -- Heiko Stuebner <heiko@sntech.de>  Thu, 14 Jan 2010 21:07:15 +0100
 
 fso-deviced (0+git20091020-1) UNRELEASED; urgency=low
 
