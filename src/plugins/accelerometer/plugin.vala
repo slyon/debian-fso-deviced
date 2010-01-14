@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -47,8 +47,9 @@ namespace Hardware
  **/
 class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractObject
 {
+    public static FsoDevice.BaseAccelerometer accelerometer;
+
     private FsoFramework.Subsystem subsystem;
-    private FsoDevice.BaseAccelerometer accelerometer;
 
     private Ternary flat;
     private Ternary landscape;
@@ -124,7 +125,7 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
             accelerometer = Object.new( classtype ) as FsoDevice.BaseAccelerometer;
             logger.info( "Ready. Using accelerometer plugin '%s'".printf( devicetype ) );
 
-            accelerometer.setDelegate( this.onAcceleration );
+            accelerometer.accelerate.connect( this.onAcceleration );
 
             movementIdleThreshold = config.intValue( Hardware.HW_ACCEL_PLUGIN_NAME, "movement_idle_threshold", Hardware.MOVEMENT_IDLE_THRESHOLD );
             movementBusyThreshold = config.intValue( Hardware.HW_ACCEL_PLUGIN_NAME, "movement_busy_threshold", Hardware.MOVEMENT_BUSY_THRESHOLD );
@@ -148,13 +149,11 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
             stopAccelerometer();
     }
 
-    public void onAcceleration( int[] axis )
+    public void onAcceleration( int x, int y, int z )
     {
-        logger.debug( "onAcceleration: acceleration values: %d, %d, %d".printf( axis[0], axis[1], axis[2] ) );
-
-        int x = axis[0];
-        int y = axis[1];
-        int z = axis[2];
+#if DEBUG
+        message( @"onAcceleration: acceleration values: $x, $y, $z" ) );
+#endif
 
         /*
 
@@ -208,7 +207,7 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
         int bounds2 = middle + region;
         var res = ( bounds1 > bounds2 ) ? value > bounds2 && value < bounds1 : value > bounds1 && value < bounds2;
 #if DEBUG
-        message( "intWithinRegion: %d, %d, %d. Answer = %s", value, middle, region, res.to_string() );
+        message( @"intWithinRegion: $value, $middle, $region. Answer = $res" );
 #endif
 
         return res; //( value > lowerbounds && value < upperbounds );
@@ -257,7 +256,7 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
             }
         }
 
-        logger.debug( "Full orientation = %s. Sending change signal for %s".printf( orientation, signal ) );
+        assert( logger.debug( @"Full orientation = $orientation. Sending change signal for $signal" ) );
         if ( signal.length > 0 )
         {
             this.orientation_changed( signal );
@@ -346,7 +345,7 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "fsodevice.accelerometer fso_register_function()" );
+    FsoFramework.theLogger.debug( "fsodevice.accelerometer fso_register_function()" );
 }
 
 /**

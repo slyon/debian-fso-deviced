@@ -11569,7 +11569,7 @@ fi
 
 ##############################################################################
 # output
-ac_config_files="$ac_config_files Makefile data/Makefile data/org.freesmartphone.odeviced.service src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/accelerometer/Makefile src/plugins/accelerometer_lis302/Makefile src/plugins/alsa_audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rfkill/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/openmoko_powercontrol/Makefile src/plugins/player_alsa/Makefile src/plugins/player_canberra/Makefile src/plugins/player_gstreamer/Makefile src/plugins/thinkpad_powercontrol/Makefile tests/Makefile"
+ac_config_files="$ac_config_files Makefile data/Makefile data/org.freesmartphone.odeviced.service src/Makefile src/lib/Makefile src/bin/Makefile src/plugins/Makefile src/plugins/accelerometer/Makefile src/plugins/accelerometer_lis302/Makefile src/plugins/audio/Makefile src/plugins/kernel26_display/Makefile src/plugins/kernel26_leds/Makefile src/plugins/kernel26_powersupply/Makefile src/plugins/kernel26_rfkill/Makefile src/plugins/kernel26_rtc/Makefile src/plugins/kernel_idle/Makefile src/plugins/kernel_info/Makefile src/plugins/kernel_input/Makefile src/plugins/openmoko_powercontrol/Makefile src/plugins/player_alsa/Makefile src/plugins/player_canberra/Makefile src/plugins/player_gstreamer/Makefile src/plugins/router_alsa/Makefile src/plugins/thinkpad_powercontrol/Makefile tests/Makefile"
 
 
 cat >confcache <<\_ACEOF
@@ -12561,7 +12561,7 @@ do
     "src/plugins/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/Makefile" ;;
     "src/plugins/accelerometer/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/accelerometer/Makefile" ;;
     "src/plugins/accelerometer_lis302/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/accelerometer_lis302/Makefile" ;;
-    "src/plugins/alsa_audio/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/alsa_audio/Makefile" ;;
+    "src/plugins/audio/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/audio/Makefile" ;;
     "src/plugins/kernel26_display/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kernel26_display/Makefile" ;;
     "src/plugins/kernel26_leds/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kernel26_leds/Makefile" ;;
     "src/plugins/kernel26_powersupply/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/kernel26_powersupply/Makefile" ;;
@@ -12574,6 +12574,7 @@ do
     "src/plugins/player_alsa/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/player_alsa/Makefile" ;;
     "src/plugins/player_canberra/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/player_canberra/Makefile" ;;
     "src/plugins/player_gstreamer/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/player_gstreamer/Makefile" ;;
+    "src/plugins/router_alsa/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/router_alsa/Makefile" ;;
     "src/plugins/thinkpad_powercontrol/Makefile") CONFIG_FILES="$CONFIG_FILES src/plugins/thinkpad_powercontrol/Makefile" ;;
     "tests/Makefile") CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
 
