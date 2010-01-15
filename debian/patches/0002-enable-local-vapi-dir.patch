@@ -1,0 +1,37 @@
+From 455fe97014c2dce70114552e7e3ae9e4917bf423 Mon Sep 17 00:00:00 2001
+From: Heiko Stuebner <heiko@sntech.de>
+Date: Fri, 15 Jan 2010 21:17:12 +0100
+Subject: [PATCH] add local vapi dir
+
+---
+ src/plugins/player_canberra/Makefile.am |    1 +
+ src/plugins/player_canberra/Makefile.in |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+
+diff --git a/src/plugins/player_canberra/Makefile.am b/src/plugins/player_canberra/Makefile.am
+index b28a9ed..393cde7 100644
+--- a/src/plugins/player_canberra/Makefile.am
++++ b/src/plugins/player_canberra/Makefile.am
+@@ -23,6 +23,7 @@ progs_ldadd = \
+ VALAC_ARGS = \
+ 	--basedir $(top_srcdir) \
+ 	--vapidir $(top_srcdir)/src/lib \
++	--vapidir $(top_srcdir)/vapi \
+ 	--pkg glib-2.0 \
+ 	--pkg gee-1.0 \
+ 	--pkg dbus-glib-1 \
+diff --git a/src/plugins/player_canberra/Makefile.in b/src/plugins/player_canberra/Makefile.in
+index e5bc59e..130270b 100644
+--- a/src/plugins/player_canberra/Makefile.in
++++ b/src/plugins/player_canberra/Makefile.in
+@@ -274,6 +274,7 @@ progs_ldadd = \
+ VALAC_ARGS = \
+ 	--basedir $(top_srcdir) \
+ 	--vapidir $(top_srcdir)/src/lib \
++	--vapidir $(top_srcdir)/vapi \
+ 	--pkg glib-2.0 \
+ 	--pkg gee-1.0 \
+ 	--pkg dbus-glib-1 \
+-- 
+1.6.5
+
