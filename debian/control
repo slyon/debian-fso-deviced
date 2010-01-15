@@ -2,7 +2,8 @@ Source: fso-deviced
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Joachim Breitner <nomeata@debian.org>, Luca Capello <luca@pca.it>, Heiko Stuebner <heiko@sntech.de>
+Uploaders: Heiko Stuebner <heiko@sntech.de>
+DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.9), libvala-dev (>= 0.7.9), libgee-dev (>= 0.5.0), libfso-glib-dev (>= 0.2.1+git20100102), libfsoframework-dev (>= 0.2.4+git20091229), libfsoresource-dev, libcanberra-dev (>= 0.12), pkg-config, libgstreamer0.10-dev, linux-libc-dev
 Standards-Version: 3.8.3
 Homepage: http://freesmartphone.org/
