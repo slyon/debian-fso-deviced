@@ -1,14 +1,16 @@
+fso-deviced (0+git20100110-2~fso) pkg-fso; urgency=low
+
+  * Add myself to Uploaders
+  * Debian Standards Version 3.8.3 -> 3.8.4
+  * Add -dbg package
+
+ -- Sebastian Reichel <elektranox@gmail.com>  Mon, 22 Feb 2010 01:00:37 +0100
+
 fso-deviced (0+git20100110-1~fso) pkg-fso; urgency=low
 
   * New upstream snapshot
 
  -- Heiko Stuebner <heiko@sntech.de>  Thu, 14 Jan 2010 21:07:15 +0100
-
-fso-deviced (0+git20091020-1) UNRELEASED; urgency=low
-
-  * New upstream snapshot
-
- -- Heiko Stuebner <heiko@sntech.de>  Sun, 15 Nov 2009 21:51:10 +0100
 
 fso-deviced (0+git20090823-1) pkg-fso; urgency=low
 

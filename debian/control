@@ -2,10 +2,10 @@ Source: fso-deviced
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Heiko Stuebner <heiko@sntech.de>
+Uploaders: Heiko Stuebner <heiko@sntech.de>, Sebastian Reichel <elektranox@gmail.com>
 DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 7), cdbs, autotools-dev, libglib2.0-dev, libdbus-1-dev, libdbus-glib-1-dev, valac (>= 0.7.9), libvala-dev (>= 0.7.9), libgee-dev (>= 0.5.0), libfso-glib-dev (>= 0.2.1+git20100102), libfsoframework-dev (>= 0.2.4+git20091229), libfsoresource-dev, libcanberra-dev (>= 0.12), pkg-config, libgstreamer0.10-dev, linux-libc-dev
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Homepage: http://freesmartphone.org/
 Vcs-Git: git://git.debian.org/git/pkg-fso/fso-deviced.git
 Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-deviced.git;a=summary
@@ -18,3 +18,16 @@ Description: freesmartphone.org device daemon
  .
  This package is part of the freesmartphone.org software stack
  and is targeted for smartphones.
+
+Package: fso-deviced-dbg
+Architecture: any
+Section: debug
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: freesmartphone.org device daemon (debug symbols)
+ This daemon implements the freesmartphone.org Device API
+ .
+ This package is part of the freesmartphone.org software stack
+ and is targeted for smartphones.
+ .
+ This package provides the debug symbols for the fso-deviced
+ package.
