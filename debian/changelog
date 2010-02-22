@@ -3,8 +3,9 @@ fso-deviced (0+git20100110-2~fso) pkg-fso; urgency=low
   * Add myself to Uploaders
   * Debian Standards Version 3.8.3 -> 3.8.4
   * Add -dbg package
+  * Add Vala 0.7.10 patch 
 
- -- Sebastian Reichel <elektranox@gmail.com>  Mon, 22 Feb 2010 01:00:37 +0100
+ -- Sebastian Reichel <elektranox@gmail.com>  Mon, 22 Feb 2010 01:48:40 +0100
 
 fso-deviced (0+git20100110-1~fso) pkg-fso; urgency=low
 
