@@ -22,7 +22,7 @@ Description: freesmartphone.org device daemon
 Package: fso-deviced-dbg
 Architecture: any
 Section: debug
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced
 Description: freesmartphone.org device daemon (debug symbols)
  This daemon implements the freesmartphone.org Device API
  .

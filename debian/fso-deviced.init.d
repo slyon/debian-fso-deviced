@@ -24,8 +24,8 @@
 #
 ### BEGIN INIT INFO
 # Provides:          fso-deviced
-# Required-Start:
-# Required-Stop:
+# Required-Start:    $remote_fs
+# Required-Stop:     $remote_fs
 # Should-Start:
 # Should-Stop:
 # Default-Start:     2 3 4 5
