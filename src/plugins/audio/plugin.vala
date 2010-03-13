@@ -114,6 +114,9 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
             case "alsa":
                 typename = "RouterLibAlsa";
                 break;
+            case "qdsp5":
+                typename = "RouterQdsp5";
+                break;
             default:
                 typename = "NullRouter";
                 break;
@@ -123,10 +126,12 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         {
             logger.warning( @"Can't instanciate requested router type $typename; will not be able to route audio" );
             router = new FsoDevice.NullRouter();
+            routertype = "NullRouter";
         }
         else
         {
             router = (FsoDevice.AudioRouter) GLib.Object.new( routertyp );
+            routertype = typename;
         }
 
         logger.info( "Created." );
@@ -134,7 +139,9 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
 
     public override string repr()
     {
-        return playertypes != null ? @"<$playertypes>" : "<>";
+        var pt = playertypes != null ? playertypes : "";
+        var rt = routertype != null ? routertype : "";
+        return @"<$pt|$rt>";
     }
 
     //
