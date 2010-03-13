@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -55,7 +55,7 @@ public static int main( string[] args )
         */
 
         mainloop.run();
-        logger.info( "mainloop => fsodevicde" );
+        logger.info( "mainloop => fsodeviced" );
     }
     logger.info( "fsodeviced shutdown." );
     return 0;

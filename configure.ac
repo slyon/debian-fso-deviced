@@ -81,6 +81,14 @@ AC_SUBST(FSO_CFLAGS)
 AC_SUBST(FSO_LIBS)
 
 ##############################################################################
+# optional feature: fsoresource integration
+AC_ARG_ENABLE(resource_integration,
+  [  --disable-resource-integration      Disable FSO resource integration (default=enabled)],
+  fsoresource="no", fsoresource="yes")
+
+AM_CONDITIONAL( [WANT_FSORESOURCE], [test x"$fsoresource" = x"yes"])
+
+##############################################################################
 # optional feature: kernel26_rfkill
 AC_ARG_ENABLE(kernel26_rfkill,
   [  --enable-kernel26-rfkill            Enable building the rfkill power control plugin (default=disabled)],
@@ -112,7 +120,7 @@ AM_CONDITIONAL( [WANT_CANBERRA], [test x"$canberra" = x"yes"])
 ##############################################################################
 # optional feature: player_gstreamer
 AC_ARG_ENABLE(player_gstreamer,
-  [  --enable-player-gstreamer            Enable building the gstreamer audio player plugin (default=disabled)],
+  [  --enable-player-gstreamer           Enable building the gstreamer audio player plugin (default=disabled)],
   gstreamer="yes", gstreamer="no")
 
 if test x$gstreamer = "xyes"; then
@@ -124,10 +132,20 @@ if test x$gstreamer = "xyes"; then
 fi
 AM_CONDITIONAL( [WANT_GSTREAMER], [test x"$gstreamer" = x"yes"])
 
+# git version
+GITV=`cat ../.git/refs/heads/master || echo "unknown"`
+AC_DEFINE_UNQUOTED([PACKAGE_GITV], ["${GITV}"], [git version])
+
 ##############################################################################
 # output
 AC_CONFIG_FILES([
   Makefile
+  conf/Makefile
+  conf/default/Makefile
+  conf/htc_qualcomm_dream/Makefile
+  conf/htc_qualcomm_msm/Makefile
+  conf/openmoko_gta/Makefile
+  conf/openmoko_gta/alsa-default/Makefile
   data/Makefile
   data/org.freesmartphone.odeviced.service
   src/Makefile
@@ -140,6 +158,7 @@ AC_CONFIG_FILES([
   src/plugins/kernel26_display/Makefile
   src/plugins/kernel26_leds/Makefile
   src/plugins/kernel26_powersupply/Makefile
+  src/plugins/palmpre_powersupply/Makefile
   src/plugins/kernel26_rfkill/Makefile
   src/plugins/kernel26_rtc/Makefile
   src/plugins/kernel_idle/Makefile
@@ -150,7 +169,11 @@ AC_CONFIG_FILES([
   src/plugins/player_canberra/Makefile
   src/plugins/player_gstreamer/Makefile
   src/plugins/router_alsa/Makefile
+  src/plugins/router_qdsp5/Makefile
+  src/plugins/router_palmpre/Makefile
   src/plugins/thinkpad_powercontrol/Makefile
+  src/plugins/vibrator_ledclass/Makefile
+  src/plugins/vibrator_timedoutputclass/Makefile
   tests/Makefile
 ])
 
@@ -162,10 +185,12 @@ echo
 echo
 echo
 echo "------------------------------------------------------------------------"
-echo "$PACKAGE_NAME $PACKAGE_VERSION"
+echo "$PACKAGE_NAME $PACKAGE_VERSION-$GITV"
 echo "------------------------------------------------------------------------"
 echo
 echo "Configuration Options:"
+echo
+echo "  FSO resource integration.............: $fsoresource"
 echo
 echo "  kernel26_rfkill......................: $rfkill"
 echo "  player_canberra......................: $canberra"

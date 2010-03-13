@@ -10,6 +10,8 @@ SUBDIRS = \
 	\
 	audio \
 	router_alsa \
+	router_qdsp5 \
+    router_palmpre \
 	player_alsa \
 	\
 	kernel26_display \
@@ -23,6 +25,11 @@ SUBDIRS = \
 	\
 	openmoko_powercontrol \
 	thinkpad_powercontrol \
+	\
+	vibrator_ledclass \
+	vibrator_timedoutputclass \
+    \
+    palmpre_powersupply \
 	\
 	$(NULL)
 
