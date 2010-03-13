@@ -40,8 +40,7 @@ host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl
 noinst_PROGRAMS = $(am__EXEEXT_1)
-@WANT_FSORESOURCE_TRUE@am__append_1 = -D WANT_FSO_RESOURCE
-subdir = src/plugins/thinkpad_powercontrol
+subdir = src/plugins/router_qdsp5
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -74,20 +73,20 @@ am__base_list = \
 am__installdirs = "$(DESTDIR)$(modlibexecdir)"
 LTLIBRARIES = $(modlibexec_LTLIBRARIES)
 am__DEPENDENCIES_1 =
-am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
-	$(am__DEPENDENCIES_1) $(top_srcdir)/src/lib/libfsodevice.la
-thinkpad_powercontrol_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
-am_thinkpad_powercontrol_la_OBJECTS =  \
-	thinkpad_powercontrol_la-plugin.lo
-thinkpad_powercontrol_la_OBJECTS =  \
-	$(am_thinkpad_powercontrol_la_OBJECTS)
+am__DEPENDENCIES_2 = $(top_srcdir)/src/lib/libfsodevice.la \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
+router_qdsp5_la_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_router_qdsp5_la_OBJECTS = router_qdsp5_la-plugin.lo \
+	router_qdsp5_la-playwav2.lo
+router_qdsp5_la_OBJECTS = $(am_router_qdsp5_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-thinkpad_powercontrol_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(thinkpad_powercontrol_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(thinkpad_powercontrol_la_LDFLAGS) $(LDFLAGS) -o $@
+router_qdsp5_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(router_qdsp5_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(router_qdsp5_la_LDFLAGS) \
+	$(LDFLAGS) -o $@
 am__EXEEXT_1 =
 PROGRAMS = $(noinst_PROGRAMS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -116,8 +115,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(thinkpad_powercontrol_la_SOURCES)
-DIST_SOURCES = $(thinkpad_powercontrol_la_SOURCES)
+SOURCES = $(router_qdsp5_la_SOURCES)
+DIST_SOURCES = $(router_qdsp5_la_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -259,33 +258,42 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
-	$(GLIB_CFLAGS) \
 	$(DBUS_CFLAGS) \
+	$(GLIB_CFLAGS) \
 	$(NULL)
 
 progs_ldadd = \
+	$(top_srcdir)/src/lib/libfsodevice.la \
 	$(FSO_LIBS) \
-	$(GLIB_LIBS) \
 	$(DBUS_LIBS) \
-	$(top_srcdir)/src/lib/libfsodevice.la
+	$(GLIB_LIBS) \
+	$(NULL)
 
-VALAC_ARGS = --basedir $(top_srcdir) --vapidir $(top_srcdir)/src/lib \
-	--pkg glib-2.0 --pkg dbus-glib-1 --pkg fso-glib-1.0 --pkg \
-	fsoframework-2.0 --pkg fsodevice-2.0 $(am__append_1)
+VALAC_ARGS = \
+	--basedir $(top_srcdir) \
+	--vapidir $(top_srcdir)/src/lib \
+	--vapidir . \
+	--pkg playwav2 \
+	--pkg glib-2.0 \
+	--pkg gee-1.0 \
+	--pkg dbus-glib-1 \
+	--pkg fso-glib-1.0 \
+	--pkg fsoframework-2.0 \
+	--pkg fsodevice-2.0
+
 
 #
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsodevice
-modlibexec_LTLIBRARIES = thinkpad_powercontrol.la
-thinkpad_powercontrol_la_SOURCES = plugin.c
-thinkpad_powercontrol_la_VALASOURCES = plugin.vala
-thinkpad_powercontrol_la_LIBADD = $(progs_ldadd)
-thinkpad_powercontrol_la_LDFLAGS = -no-undefined -module -avoid-version
-thinkpad_powercontrol_la_LIBTOOLFLAGS = --tag=disable-static
+modlibexec_LTLIBRARIES = router_qdsp5.la
+router_qdsp5_la_SOURCES = plugin.c playwav2.c
+router_qdsp5_la_VALASOURCES = plugin.vala
+router_qdsp5_la_LIBADD = $(progs_ldadd)
+router_qdsp5_la_LDFLAGS = -no-undefined -module -avoid-version
+router_qdsp5_la_LIBTOOLFLAGS = --tag=disable-static
 CLEANFILES = \
-    *.c \
-    *.h \
+    plugin.c \
     *.la \
     *.lo \
     $(NULL)
@@ -307,9 +315,9 @@ $(srcdir)/Makefile.in:  $(srcdir)/Makefile.am $(top_srcdir)/Makefile.decl $(am__
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/plugins/thinkpad_powercontrol/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/plugins/router_qdsp5/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/plugins/thinkpad_powercontrol/Makefile
+	  $(AUTOMAKE) --gnu src/plugins/router_qdsp5/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -359,8 +367,8 @@ clean-modlibexecLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-thinkpad_powercontrol.la: $(thinkpad_powercontrol_la_OBJECTS) $(thinkpad_powercontrol_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(thinkpad_powercontrol_la_LINK) -rpath $(modlibexecdir) $(thinkpad_powercontrol_la_OBJECTS) $(thinkpad_powercontrol_la_LIBADD) $(LIBS)
+router_qdsp5.la: $(router_qdsp5_la_OBJECTS) $(router_qdsp5_la_DEPENDENCIES) 
+	$(AM_V_CCLD)$(router_qdsp5_la_LINK) -rpath $(modlibexecdir) $(router_qdsp5_la_OBJECTS) $(router_qdsp5_la_LIBADD) $(LIBS)
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; test -n "$$list" || exit 0; \
@@ -377,7 +385,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/thinkpad_powercontrol_la-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/router_qdsp5_la-playwav2.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/router_qdsp5_la-plugin.Plo@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -403,13 +412,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-thinkpad_powercontrol_la-plugin.lo: plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(thinkpad_powercontrol_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT thinkpad_powercontrol_la-plugin.lo -MD -MP -MF $(DEPDIR)/thinkpad_powercontrol_la-plugin.Tpo -c -o thinkpad_powercontrol_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/thinkpad_powercontrol_la-plugin.Tpo $(DEPDIR)/thinkpad_powercontrol_la-plugin.Plo
+router_qdsp5_la-plugin.lo: plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(router_qdsp5_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT router_qdsp5_la-plugin.lo -MD -MP -MF $(DEPDIR)/router_qdsp5_la-plugin.Tpo -c -o router_qdsp5_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/router_qdsp5_la-plugin.Tpo $(DEPDIR)/router_qdsp5_la-plugin.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='thinkpad_powercontrol_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='plugin.c' object='router_qdsp5_la-plugin.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(thinkpad_powercontrol_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o thinkpad_powercontrol_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(router_qdsp5_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o router_qdsp5_la-plugin.lo `test -f 'plugin.c' || echo '$(srcdir)/'`plugin.c
+
+router_qdsp5_la-playwav2.lo: playwav2.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(router_qdsp5_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -MT router_qdsp5_la-playwav2.lo -MD -MP -MF $(DEPDIR)/router_qdsp5_la-playwav2.Tpo -c -o router_qdsp5_la-playwav2.lo `test -f 'playwav2.c' || echo '$(srcdir)/'`playwav2.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/router_qdsp5_la-playwav2.Tpo $(DEPDIR)/router_qdsp5_la-playwav2.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='playwav2.c' object='router_qdsp5_la-playwav2.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(router_qdsp5_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o router_qdsp5_la-playwav2.lo `test -f 'playwav2.c' || echo '$(srcdir)/'`playwav2.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -671,7 +688,7 @@ test-report perf-report full-report:	${TEST_PROGS}
 .PHONY: test test-report perf-report full-report
 # run make test as part of make check
 check-local: test
-$(thinkpad_powercontrol_la_SOURCES): $(thinkpad_powercontrol_la_VALASOURCES)
+$(router_qdsp5_la_SOURCES): $(router_qdsp5_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
 
