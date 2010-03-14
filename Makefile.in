@@ -246,6 +246,7 @@ EXTRA_DIST =
 TEST_PROGS = 
 NULL = 
 SUBDIRS = \
+	conf \
 	data \
 	src \
 	tests \

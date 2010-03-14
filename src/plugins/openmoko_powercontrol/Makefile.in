@@ -40,6 +40,7 @@ host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl
 noinst_PROGRAMS = $(am__EXEEXT_1)
+@WANT_FSORESOURCE_TRUE@am__append_1 = -D WANT_FSO_RESOURCE
 subdir = src/plugins/openmoko_powercontrol
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -268,15 +269,9 @@ progs_ldadd = \
 	$(DBUS_LIBS) \
 	$(top_srcdir)/src/lib/libfsodevice.la
 
-VALAC_ARGS = \
-	--basedir $(top_srcdir) \
-	--vapidir $(top_srcdir)/src/lib \
-	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
-	--pkg fso-glib-1.0 \
-	--pkg fsoframework-2.0 \
-	--pkg fsodevice-2.0
-
+VALAC_ARGS = --basedir $(top_srcdir) --vapidir $(top_srcdir)/src/lib \
+	--pkg glib-2.0 --pkg dbus-glib-1 --pkg fso-glib-1.0 --pkg \
+	fsoframework-2.0 --pkg fsodevice-2.0 $(am__append_1)
 
 #
 # plugin

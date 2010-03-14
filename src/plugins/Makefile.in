@@ -72,10 +72,12 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 ETAGS = etags
 CTAGS = ctags
 DIST_SUBDIRS = accelerometer accelerometer_lis302 audio router_alsa \
-	player_alsa kernel26_display kernel26_leds \
-	kernel26_powersupply kernel26_rtc kernel_idle kernel_info \
-	kernel_input openmoko_powercontrol thinkpad_powercontrol \
-	player_canberra player_gstreamer kernel26_rfkill
+	router_qdsp5 router_palmpre player_alsa kernel26_display \
+	kernel26_leds kernel26_powersupply kernel26_rtc kernel_idle \
+	kernel_info kernel_input openmoko_powercontrol \
+	thinkpad_powercontrol vibrator_ledclass \
+	vibrator_timedoutputclass palmpre_powersupply player_canberra \
+	player_gstreamer kernel26_rfkill
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -239,10 +241,12 @@ TEST_PROGS =
 NULL = 
 AUTOMAKE_OPTIONS = subdir-objects
 SUBDIRS = accelerometer accelerometer_lis302 audio router_alsa \
-	player_alsa kernel26_display kernel26_leds \
-	kernel26_powersupply kernel26_rtc kernel_idle kernel_info \
-	kernel_input openmoko_powercontrol thinkpad_powercontrol \
-	$(NULL) $(am__append_1) $(am__append_2) $(am__append_3)
+	router_qdsp5 router_palmpre player_alsa kernel26_display \
+	kernel26_leds kernel26_powersupply kernel26_rtc kernel_idle \
+	kernel_info kernel_input openmoko_powercontrol \
+	thinkpad_powercontrol vibrator_ledclass \
+	vibrator_timedoutputclass palmpre_powersupply $(NULL) \
+	$(am__append_1) $(am__append_2) $(am__append_3)
 all: all-recursive
 
 .SUFFIXES:
