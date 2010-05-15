@@ -1,4 +1,4 @@
-AC_INIT([fsodeviced], [0.9.0], [smartphones-userland@linuxtogo.org], [fsodeviced])
+AC_INIT([fsodeviced], [0.9.4], [smartphones-userland@linuxtogo.org], [fsodeviced])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -19,7 +19,7 @@ AC_SUBST(LDFLAGS)
 
 ##############################################################################
 # required versions
-VALA_REQUIRED=0.7.9
+VALA_REQUIRED=0.8.0.69
 GLIB_REQUIRED=2.18.0
 GEE_REQUIRED=0.5.0
 DBUS_REQUIRED=1.2.1
@@ -27,6 +27,7 @@ DBUS_GLIB_REQUIRED=0.76
 FSO_GLIB_REQUIRED=0.2.0
 FSO_FRAMEWORK_REQUIRED=0.2.4
 FSO_RESOURCE_REQUIRED=0.1.0
+ALSA_REQUIRED=0.20
 CANBERRA_REQUIRED=0.17
 GSTREAMER_REQUIRED=0.10.20
 
@@ -81,6 +82,13 @@ AC_SUBST(FSO_CFLAGS)
 AC_SUBST(FSO_LIBS)
 
 ##############################################################################
+# alsa
+PKG_CHECK_MODULES(ALSA,
+  alsa >= $ALSA_REQUIRED)
+AC_SUBST(ALSA_CFLAGS)
+AC_SUBST(ALSA_LIBS)
+
+##############################################################################
 # optional feature: fsoresource integration
 AC_ARG_ENABLE(resource_integration,
   [  --disable-resource-integration      Disable FSO resource integration (default=enabled)],
@@ -132,6 +140,14 @@ if test x$gstreamer = "xyes"; then
 fi
 AM_CONDITIONAL( [WANT_GSTREAMER], [test x"$gstreamer" = x"yes"])
 
+##############################################################################
+# check for debugging
+AC_ARG_ENABLE(debug,
+  [  --enable-debug            Enable debug build (default=disabled)],
+  debug="yes", debug="no")
+AM_CONDITIONAL( [WANT_DEBUG], [test x"$debug" = x"yes"])
+
+##############################################################################
 # git version
 GITV=`cat ../.git/refs/heads/master || echo "unknown"`
 AC_DEFINE_UNQUOTED([PACKAGE_GITV], ["${GITV}"], [git version])
@@ -143,9 +159,12 @@ AC_CONFIG_FILES([
   conf/Makefile
   conf/default/Makefile
   conf/htc_qualcomm_dream/Makefile
+  conf/htc_qualcomm_dream/alsa-default/Makefile
   conf/htc_qualcomm_msm/Makefile
   conf/openmoko_gta/Makefile
-  conf/openmoko_gta/alsa-default/Makefile
+  conf/openmoko_gta/alsa-2.6.29/Makefile
+  conf/openmoko_gta/alsa-2.6.31/Makefile
+  conf/palm_pre/Makefile
   data/Makefile
   data/org.freesmartphone.odeviced.service
   src/Makefile
@@ -153,26 +172,32 @@ AC_CONFIG_FILES([
   src/bin/Makefile
   src/plugins/Makefile
   src/plugins/accelerometer/Makefile
+  src/plugins/accelerometer_kxsd9/Makefile
   src/plugins/accelerometer_lis302/Makefile
+  src/plugins/ambientlight_palmpre/Makefile
   src/plugins/audio/Makefile
+  src/plugins/backlight_omappanel/Makefile
   src/plugins/kernel26_display/Makefile
+  src/plugins/kernel26_firmwareloader/Makefile
   src/plugins/kernel26_leds/Makefile
   src/plugins/kernel26_powersupply/Makefile
-  src/plugins/palmpre_powersupply/Makefile
   src/plugins/kernel26_rfkill/Makefile
   src/plugins/kernel26_rtc/Makefile
   src/plugins/kernel_idle/Makefile
   src/plugins/kernel_info/Makefile
   src/plugins/kernel_input/Makefile
   src/plugins/openmoko_powercontrol/Makefile
+  src/plugins/palmpre_powersupply/Makefile
   src/plugins/player_alsa/Makefile
   src/plugins/player_canberra/Makefile
   src/plugins/player_gstreamer/Makefile
+  src/plugins/proximity_palmpre/Makefile
   src/plugins/router_alsa/Makefile
   src/plugins/router_qdsp5/Makefile
   src/plugins/router_palmpre/Makefile
   src/plugins/thinkpad_powercontrol/Makefile
   src/plugins/vibrator_ledclass/Makefile
+  src/plugins/vibrator_omapvibe/Makefile
   src/plugins/vibrator_timedoutputclass/Makefile
   tests/Makefile
 ])
@@ -196,7 +221,9 @@ echo "  kernel26_rfkill......................: $rfkill"
 echo "  player_canberra......................: $canberra"
 echo "  player_gstreamer.....................: $gstreamer"
 echo
-echo "  prefix..................: $prefix"
+echo "  debug build..........................: $debug"
+echo
+echo "  prefix...............................: $prefix"
 echo
 echo "------------------------------------------------------------------------"
 echo

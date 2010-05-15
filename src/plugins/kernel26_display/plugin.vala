@@ -1,7 +1,6 @@
 /*
- * plugin.vala
- * Written by Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
- * All Rights Reserved
+ * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009 Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -24,21 +23,30 @@ using GLib;
 namespace Kernel26
 {
 
-class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
+internal const string DISPLAY_PLUGIN_NAME = "fsodevice.kernel26_display";
+internal const double DISPLAY_SMOOTH_PERIOD = 1 * 0.7; // seconds
+internal const double DISPLAY_SMOOTH_STEP =  1 * 0.03; // seconds
+
+class Display : FreeSmartphone.Device.Display,
+                FreeSmartphone.Info,
+                FsoFramework.AbstractObject
 {
     private FsoFramework.Subsystem subsystem;
-    static uint counter;
+    private static uint counter;
+    private bool smoothup;
+    private bool smoothdown;
+    private bool smoothInProgress = false;
 
     private int max_brightness;
     private int current_brightness;
     private string sysfsnode;
     private int fb_fd = -1;
 
-    const int FBIOBLANK = 0x4611;
-    const int FB_BLANK_UNBLANK = 0;
-    const int FB_BLANK_POWERDOWN = 4;
+    private const int FBIOBLANK = 0x4611;
+    private const int FB_BLANK_UNBLANK = 0;
+    private const int FB_BLANK_POWERDOWN = 4;
 
-    public Display(FsoFramework.Subsystem subsystem, string sysfsnode)
+    public Display( FsoFramework.Subsystem subsystem, string sysfsnode )
     {
         this.subsystem = subsystem;
         this.sysfsnode = sysfsnode;
@@ -48,19 +56,25 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
 
         fb_fd = Posix.open( dev_fb0, Posix.O_RDONLY );
         if ( fb_fd == -1 )
-            logger.warning( "Can't open %s (%s). Full display power control not available.".printf( dev_fb0, Posix.strerror( Posix.errno ) ) );
+            logger.warning( @"Can't open $dev_fb0 ($(strerror(errno))). Full display power control not available." );
+
+        var smooth = config.stringValue( DISPLAY_PLUGIN_NAME, "smooth", "none" ).down();
+        smoothup = smooth in new string[] { "up", "always" };
+        smoothdown = smooth in new string[] { "down", "always" };
+
+        debug( @"smoothup = $smoothup, smoothdown = $smoothdown" );
 
         subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
         subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
                         "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter++ ),
                         this );
 
-        logger.info( "Created new Display object, max brightness = %d".printf( max_brightness ) );
+        logger.info( @"Created w/ max brightness = $max_brightness, smooth up = $smoothup, smooth down = $smoothdown" );
     }
 
     public override string repr()
     {
-        return "<FsoFramework.Device.Display @ %s>".printf( this.sysfsnode );
+        return @"<$sysfsnode>";
     }
 
     private void _setBacklightPower( bool on )
@@ -96,28 +110,110 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
         return _valueToPercent( value );
     }
 
+    private async void _setBrightnessSoft( int brightness )
+    {
+        smoothInProgress = true;
+
+        double current = current_brightness;
+        double interval = brightness - current_brightness;
+
+        for ( double dt = 0; dt < DISPLAY_SMOOTH_PERIOD; dt += DISPLAY_SMOOTH_STEP )
+        {
+            double x = dt/DISPLAY_SMOOTH_PERIOD;
+            double fx = ( interval > 0 ) ? x * x * x : (1-x) * (1-x) * (1-x);
+            double val = ( interval > 0 ) ? ( current + ( fx * interval ) ) : ( current + ( (1-fx) * interval ) ); // may want to shit 7+current...
+#if DEBUG
+            message( "x = %.2f, fx = %.2f (val = %.2f)", x, fx, val );
+#endif
+            if ( !smoothInProgress ) // check whether someone else wants to interrupt us
+            {
+                return;
+            }
+
+            FsoFramework.FileHandling.write( ( (int)Math.round( val ) ).to_string(), this.sysfsnode + "/brightness" );
+            current_brightness = brightness;
+            Timeout.add( (int)(DISPLAY_SMOOTH_STEP * 1000), _setBrightnessSoft.callback );
+            yield;
+        }
+
+        FsoFramework.FileHandling.write( brightness.to_string(), this.sysfsnode + "/brightness" );
+        current_brightness = brightness;
+        assert( logger.debug( @"Brightness set to $brightness [soft]" ) );
+
+        smoothInProgress = false;
+    }
+
+    private void _setBrightness( int brightness )
+    {
+        if ( current_brightness == brightness )
+        {
+            return;
+        }
+
+        if ( ( current_brightness < brightness ) && smoothup )
+        {
+            _setBrightnessSoft( brightness );
+            return;
+        }
+
+        if ( ( current_brightness > brightness ) && smoothdown )
+        {
+            _setBrightnessSoft( brightness );
+            return;
+        }
+#if DEBUG
+        message( "interrupting smooth in progress (if any)" );
+#endif
+        smoothInProgress = false; // signalize to stop any smoothing in progress
+        FsoFramework.FileHandling.write( brightness.to_string(), this.sysfsnode + "/brightness" );
+
+        if ( current_brightness == 0 ) // previously we were off
+        {
+            _setBacklightPower( true );
+        }
+        else if ( brightness == 0 ) // now we are off
+        {
+            _setBacklightPower( false );
+        }
+        current_brightness = brightness;
+
+        assert( logger.debug( @"Brightness set to $brightness [hard]" ) );
+    }
+
+    //
+    // FreeSmartphone.Info (DBUS API)
+    //
+    public async HashTable<string, Value?> get_info()
+    {
+        string _leaf;
+        var val = Value( typeof(string) );
+        HashTable<string, Value?> info_table = new HashTable<string, Value?>( str_hash, str_equal );
+        /* Just read all the files in the sysfs path and return it as a{ss} */
+        try
+        {
+            Dir dir = Dir.open( this.sysfsnode, 0 );
+            while ((_leaf = dir.read_name()) != null)
+            {
+                if( FileUtils.test (this.sysfsnode + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent" )
+                {
+                    val.take_string( FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf ).strip());
+                    info_table.insert( _leaf, val );
+                }
+            }
+        }
+        catch ( GLib.Error error )
+        {
+            logger.warning( error.message );
+        }
+        return info_table;
+    }
+
     //
     // FreeSmartphone.Device.Display (DBUS API)
     //
-    public async string get_name()
-    {
-        return Path.get_basename( sysfsnode );
-    }
-
     public async void set_brightness( int brightness )
     {
-        var value = _percentToValue( brightness );
-
-        if ( current_brightness != value )
-        {
-            FsoFramework.FileHandling.write( value.to_string(), this.sysfsnode + "/brightness" );
-            if ( current_brightness == 0 ) // previously we were off
-                _setBacklightPower( true );
-            else if ( value == 0 ) // now we are off
-                _setBacklightPower( false );
-            current_brightness = value;
-        }
-        logger.debug( "Brightness set to %d".printf( brightness ) );
+        _setBrightness( _percentToValue( brightness ) );
     }
 
     public async int get_brightness()
@@ -134,31 +230,6 @@ class Display : FreeSmartphone.Device.Display, FsoFramework.AbstractObject
     {
         var value = power ? "0" : "1";
         FsoFramework.FileHandling.write( value, this.sysfsnode + "/bl_power" );
-    }
-
-    public async HashTable<string, Value?> get_info()
-    {
-        string _leaf;
-        var val = Value( typeof(string) );
-        HashTable<string, Value?> info_table = new HashTable<string, Value?>( str_hash, str_equal );
-        /* Just read all the files in the sysfs path and return it as a{ss} */
-        try
-        {
-            Dir dir = Dir.open( this.sysfsnode, 0 );
-            while ((_leaf = dir.read_name()) != null)
-            {
-                if( FileUtils.test (this.sysfsnode + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent" )
-                {
-                    val.take_string(FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf).strip());
-                    info_table.insert (_leaf, val);
-                }
-            }
-        }
-        catch ( GLib.Error error )
-        {
-            logger.warning( error.message );
-        }
-        return info_table;
     }
 }
 
@@ -186,12 +257,12 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
         instances.append( new Kernel26.Display( subsystem, filename ) );
         entry = dir.read_name();
     }
-    return "fsodevice.kernel26_display";
+    return Kernel26.DISPLAY_PLUGIN_NAME;
 }
 
 
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    debug( "kernel26_display fso_register_function()" );
+    FsoFramework.theLogger.debug( "fsodevice.kernel26_display fso_register_function()" );
 }
