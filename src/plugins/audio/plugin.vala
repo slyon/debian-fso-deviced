@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -25,7 +25,9 @@ namespace Hardware
 /**
  * Audio Manager
  **/
-class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
+class AudioManager : FreeSmartphone.Device.Audio,
+                     FreeSmartphone.Info,
+                     FsoFramework.AbstractObject
 {
     private const string MODULE_NAME = "fsodevice.audio";
 
@@ -145,19 +147,13 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
     }
 
     //
-    // FreeSmartphone.Device.Sound (DBUS API)
+    // FreeSmartphone.Info (DBUS API)
     //
-
-    //
-    // Scenario
-    public async string[] get_available_scenarios() throws DBus.Error
-    {
-        return router.availableScenarios();
-    }
-
     public async HashTable<string,Value?> get_info() throws DBus.Error
     {
         var dict = new HashTable<string,Value?>( str_hash, str_equal );
+
+        //FIXME: implement
 
         /*
         var value = Value( typeof(string[] ) );
@@ -175,12 +171,23 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
         return dict;
     }
 
-    public async string get_scenario() throws DBus.Error
+    //
+    // FreeSmartphone.Device.Sound (DBUS API)
+    //
+
+    //
+    // Scenario
+    public async string[] get_available_scenarios() throws FreeSmartphone.Error, DBus.Error
+    {
+        return router.availableScenarios();
+    }
+
+    public async string get_scenario() throws FreeSmartphone.Error, DBus.Error
     {
         return router.currentScenario();
     }
 
-    public async string pull_scenario() throws FreeSmartphone.Device.AudioError, DBus.Error
+    public async string pull_scenario() throws FreeSmartphone.Device.AudioError, FreeSmartphone.Error, DBus.Error
     {
         return router.pullScenario();
     }
@@ -210,6 +217,18 @@ class AudioManager : FreeSmartphone.Device.Audio, FsoFramework.AbstractObject
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Scenario not available" );
         }
         router.saveScenario( scenario );
+    }
+
+    //
+    // Mixer
+    public async uint8 get_volume() throws FreeSmartphone.Error, DBus.Error
+    {
+        return router.currentVolume();
+    }
+
+    public async void set_volume( uint8 volume ) throws FreeSmartphone.Error, DBus.Error
+    {
+        router.setVolume( volume );
     }
 
     //

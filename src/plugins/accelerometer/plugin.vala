@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -45,7 +45,9 @@ namespace Hardware
 /**
  * Implementation of org.freesmartphone.Device.Orientation for an Accelerometer device
  **/
-class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractObject
+class Accelerometer : FreeSmartphone.Device.Orientation,
+                      FreeSmartphone.Info,
+                      FsoFramework.AbstractObject
 {
     public static FsoDevice.BaseAccelerometer accelerometer;
 
@@ -109,6 +111,9 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
             {
                 case "lis302":
                     typename = "HardwareAccelerometerLis302";
+                    break;
+                case "kxsd9":
+                    typename = "HardwareAccelerometerKxsd9";
                     break;
                 default:
                     logger.error( "Unknown accelerometer device type '%s'".printf( devicetype ) );
@@ -263,17 +268,19 @@ class Accelerometer : FreeSmartphone.Device.Orientation, FsoFramework.AbstractOb
         }
     }
 
-    // Resource Handling
-
     //
-    // FsoFramework.Device.Orientation (DBUS)
+    // FreeSmartphone.Info (DBUS)
     //
     public async HashTable<string,Value?> get_info()
     {
+        //FIXME: implement
         var dict = new HashTable<string,Value?>( str_hash, str_equal );
         return dict;
     }
 
+    //
+    // FreeSmartphone.Device.Orientation (DBUS)
+    //
     public async string get_orientation()
     {
         return orientation;

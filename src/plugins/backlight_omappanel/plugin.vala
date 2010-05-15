@@ -20,18 +20,22 @@
 
 using GLib;
 
-namespace Kernel26
+namespace Backlight
 {
 
-internal const string DISPLAY_PLUGIN_NAME = "fsodevice.kernel26_display";
+internal const string DISPLAY_PLUGIN_NAME = "fsodevice.backlight_omappanel";
 internal const double DISPLAY_SMOOTH_PERIOD = 1 * 0.7; // seconds
 internal const double DISPLAY_SMOOTH_STEP =  1 * 0.03; // seconds
 
-class Display : FreeSmartphone.Device.Display,
+class OmapPanel : FreeSmartphone.Device.Display,
                 FreeSmartphone.Info,
                 FsoFramework.AbstractObject
 {
     private FsoFramework.Subsystem subsystem;
+    private string sysfsnode;
+    private string state;
+
+
     private static uint counter;
     private bool smoothup;
     private bool smoothdown;
@@ -39,18 +43,19 @@ class Display : FreeSmartphone.Device.Display,
 
     private int max_brightness;
     private int current_brightness;
-    private string sysfsnode;
     private int fb_fd = -1;
 
     private const int FBIOBLANK = 0x4611;
     private const int FB_BLANK_UNBLANK = 0;
     private const int FB_BLANK_POWERDOWN = 4;
 
-    public Display( FsoFramework.Subsystem subsystem, string sysfsnode )
+    public OmapPanel( FsoFramework.Subsystem subsystem, string sysfsnode )
     {
         this.subsystem = subsystem;
         this.sysfsnode = sysfsnode;
-        this.max_brightness = FsoFramework.FileHandling.read( this.sysfsnode + "/max_brightness" ).to_int();
+        this.state = sysfsnode + "/state";
+
+        this.max_brightness = 100; //FsoFramework.FileHandling.read( this.sysfsnode + "/max_brightness" ).to_int();
 
         this.current_brightness = _getBrightness();
 
@@ -79,8 +84,11 @@ class Display : FreeSmartphone.Device.Display,
 
     private void _setBacklightPower( bool on )
     {
+        /*
         if ( fb_fd != -1 )
             Posix.ioctl( fb_fd, FBIOBLANK, on ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN );
+        */
+        FsoFramework.FileHandling.write( on ? "1" : "0", this.state );
     }
 
     private int _valueToPercent( int value )
@@ -106,7 +114,7 @@ class Display : FreeSmartphone.Device.Display,
 
     private int _getBrightness()
     {
-        var value = FsoFramework.FileHandling.read( this.sysfsnode + "/actual_brightness" ).to_int();
+        var value = FsoFramework.FileHandling.read( this.sysfsnode + "/brightness" ).to_int();
         return _valueToPercent( value );
     }
 
@@ -121,7 +129,7 @@ class Display : FreeSmartphone.Device.Display,
         {
             double x = dt/DISPLAY_SMOOTH_PERIOD;
             double fx = ( interval > 0 ) ? x * x * x : (1-x) * (1-x) * (1-x);
-            double val = ( interval > 0 ) ? ( current + ( fx * interval ) ) : ( current + ( (1-fx) * interval ) ); // may want to shit 7+current...
+            double val = ( interval > 0 ) ? ( current + ( fx * interval ) ) : ( current + ( (1-fx) * interval ) );
 #if DEBUG
             message( "x = %.2f, fx = %.2f (val = %.2f)", x, fx, val );
 #endif
@@ -223,46 +231,46 @@ class Display : FreeSmartphone.Device.Display,
 
     public async bool get_backlight_power()
     {
-        return FsoFramework.FileHandling.read( this.sysfsnode + "/bl_power" ).to_int() == 0;
+        return FsoFramework.FileHandling.read( this.state ).to_int() == 0;
     }
 
     public async void set_backlight_power( bool power )
     {
         var value = power ? "0" : "1";
-        FsoFramework.FileHandling.write( value, this.sysfsnode + "/bl_power" );
+        FsoFramework.FileHandling.write( value, this.state );
     }
 }
 
 }
 
 static string dev_fb0;
-static string sys_class_backlight;
-List<Kernel26.Display> instances;
+static string sys_class_display;
+List<Backlight.OmapPanel> instances;
 
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     // grab sysfs and dev paths
     var config = FsoFramework.theConfig;
     var sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
-    sys_class_backlight = "%s/class/backlight".printf( sysfs_root );
+    sys_class_display = "%s/class/display".printf( sysfs_root );
     var dev_root = config.stringValue( "cornucopia", "dev_root", "/dev" );
     dev_fb0 = "%s/fb0".printf( dev_root );
 
     // scan sysfs path for leds
-    var dir = Dir.open( sys_class_backlight, 0 );
+    var dir = Dir.open( sys_class_display, 0 );
     string entry = dir.read_name();
     while ( entry != null )
     {
-        var filename = Path.build_filename( sys_class_backlight, entry );
-        instances.append( new Kernel26.Display( subsystem, filename ) );
+        var filename = Path.build_filename( sys_class_display, entry );
+        instances.append( new Backlight.OmapPanel( subsystem, filename ) );
         entry = dir.read_name();
     }
-    return Kernel26.DISPLAY_PLUGIN_NAME;
+    return Backlight.DISPLAY_PLUGIN_NAME;
 }
 
 
 [ModuleInit]
 public static void fso_register_function( TypeModule module )
 {
-    FsoFramework.theLogger.debug( "fsodevice.kernel26_display fso_register_function()" );
+    FsoFramework.theLogger.debug( "fsodevice.backlight_omappanel fso_register_function()" );
 }

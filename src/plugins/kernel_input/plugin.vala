@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -213,6 +213,36 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
  **/
 public class EventStatus
 {
+    private bool pressed;
+    private bool reportheld;
+    private TimeVal timestamp;
+    private uint timeout;
+    private string name;
+
+    private uint age()
+    {
+        var now = TimeVal();
+        var diff = ( now.tv_sec - timestamp.tv_sec ) * 1000000 + ( now.tv_usec - timestamp.tv_usec );
+        return (uint) diff / 1000000;
+    }
+
+    private bool onTimeout()
+    {
+        aggregate.event( name, FreeSmartphone.Device.InputState.HELD, (int) age() ); // DBUS SIGNAL
+        return true;
+    }
+
+    ~EventStatus()
+    {
+#if DEBUG
+        debug( @"EventStatus for $name (held $reportheld) destroyed" );
+#endif
+    }
+
+    //
+    // public API
+    //
+
     public EventStatus( string name, bool reportheld )
     {
         this.name = name;
@@ -220,37 +250,74 @@ public class EventStatus
         pressed = false;
         timeout = 0;
 #if DEBUG
-        message( "event status for %s (held %d) created", name, (int)reportheld );
+        debug( @"EventStatus for $name (held $reportheld) created" );
 #endif
     }
 
-    ~EventStatus()
+    public void handleRelative( Linux.Input.Event ev )
     {
+        var axis = ev.code;
+        var offset = ev.value;
+        aggregate.directional_event( name, axis, offset );
+    }
+
+    public void handle( Linux.Input.Event ev )
+    {
+        if ( ev.type == Linux.Input.EV_REL )
+        {
+            handleRelative( ev );
+            return;
+        }
+
+        switch ( ev.value )
+        {
+            case ( KEY_PRESS ):
+                timestamp = TimeVal();
+                pressed = true;
 #if DEBUG
-        message( "event status for %s (held %d) destroyed", name, (int)reportheld );
+                aggregate.logger.debug( @"$name pressed" );
 #endif
-    }
+                if ( reportheld )
+                {
+                    timeout = Timeout.add( 1050, onTimeout );
+                }
+                aggregate.event( name, FreeSmartphone.Device.InputState.PRESSED, 0 ); // DBUS SIGNAL
+                break;
 
-    public bool pressed;
-    public bool reportheld;
-    public TimeVal timestamp;
-    public uint timeout;
-    public string name;
+            case ( KEY_RELEASE ):
+#if DEBUG
+                aggregate.logger.debug( @"$name released" );
+#endif
+                if ( !pressed )
+                {
+                    aggregate.logger.warning( "Received release event before pressed event!?" );
+                    aggregate.event( name, FreeSmartphone.Device.InputState.RELEASED, 0 ); // DBUS SIGNAL
+                }
+                else
+                {
+                    pressed = false;
+                    if ( timeout > 0 )
+                    {
+                        Source.remove( timeout );
+                    }
+                    aggregate.event( name, FreeSmartphone.Device.InputState.RELEASED, (int) age() ); // DBUS SIGNAL
+                }
+                break;
 
-    public uint age()
-    {
-        var now = TimeVal();
-        var diff = ( now.tv_sec - timestamp.tv_sec ) * 1000000 + ( now.tv_usec - timestamp.tv_usec );
-        return (uint) diff / 1000000;
-    }
+            case ( KEY_REPEAT ):
+#if DEBUG
+                aggregate.logger.debug( @"$name autorepeat (ignoring)" );
+#endif
+                break;
 
-    public bool onTimeout()
-    {
-        aggregate.event( name, FreeSmartphone.Device.InputState.HELD, (int) age() ); // DBUS SIGNAL
-        return true;
+            default:
+#if DEBUG
+                aggregate.logger.debug( @"$name unknown action $(ev.value); please report." );
+#endif
+                break;
+        }
     }
 }
-
 
 /**
  * Implementation of org.freesmartphone.Device.InputDevice as aggregated Kernel Input Device
@@ -264,6 +331,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
     private HashMap<int,EventStatus> keys;
     private HashMap<int,EventStatus> switches;
+    private HashMap<int,EventStatus> relatives;
 
     public AggregateInputDevice( FsoFramework.Subsystem subsystem, string sysfsnode )
     {
@@ -274,6 +342,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
         keys = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
         switches = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
+        relatives = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
 
         _parseConfig();
 
@@ -359,8 +428,11 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
                 case "switch":
                     switches[code] = new EventStatus( name, reportheld );
                     break;
+                case "relative":
+                    relatives[code] = new EventStatus( name, reportheld );
+                    break;
                 default:
-                    logger.warning( "Config option $entry has unknown type element $type. Ignoring" );
+                    logger.warning( @"Config option $entry has unknown type element $type. Ignoring" );
                     continue;
             }
         }
@@ -378,6 +450,9 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
             case Linux.Input.EV_SW:
                 table = switches;
                 break;
+            case Linux.Input.EV_REL:
+                table = relatives;
+                break;
             default:
                 break;
         }
@@ -389,55 +464,7 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
         if ( es == null )
             return;
 
-        switch ( ev.value )
-        {
-            case ( KEY_PRESS ):
-                es.timestamp.tv_sec = ev.time.tv_sec;
-                es.timestamp.tv_usec = ev.time.tv_usec;
-                es.pressed = true;
-#if DEBUG
-                logger.debug( "%s pressed".printf( es.name ) );
-#endif
-
-                if ( es.reportheld )
-                {
-                    es.timeout = Timeout.add( 1050, es.onTimeout );
-                }
-                this.event( es.name, FreeSmartphone.Device.InputState.PRESSED, 0 ); // DBUS SIGNAL
-                break;
-
-            case ( KEY_RELEASE ):
-#if DEBUG
-                logger.debug( "%s released".printf( es.name ) );
-#endif
-                if ( !es.pressed )
-                {
-                    logger.warning( "Received release event before pressed event!?" );
-                    this.event( es.name, FreeSmartphone.Device.InputState.RELEASED, 0 ); // DBUS SIGNAL
-                }
-                else
-                {
-                    es.pressed = false;
-                    if ( es.timeout > 0 )
-                    {
-                        Source.remove( es.timeout );
-                    }
-                    this.event( es.name, FreeSmartphone.Device.InputState.RELEASED, (int) es.age() ); // DBUS SIGNAL
-                }
-                break;
-
-            case ( KEY_REPEAT ):
-#if DEBUG
-                logger.debug( "%s autorepeat (ignoring)".printf( es.name ) );
-#endif
-                break;
-
-            default:
-#if DEBUG
-                logger.debug( "%s unknown action %d; please report.".printf( es.name, ev.value ) );
-#endif
-                break;
-        }
+        es.handle( ev );
     }
 
     public override string repr()
@@ -457,8 +484,9 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
 
         if ( ev.type != Linux.Input.EV_SYN )
         {
-            //FIXME: read from config whether we want debug events
-            logger.debug( @"Input event $(ev.type), $(ev.code), $(ev.value)" );
+#if DEBUG
+            logger.debug( @"Input event (fd$(source.unix_get_fd())): $(ev.type), $(ev.code), $(ev.value)" );
+#endif
             _handleInputEvent( ref ev );
         }
 

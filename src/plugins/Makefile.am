@@ -5,7 +5,10 @@ NULL =
 AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
+	ambientlight_palmpre \
+	\
 	accelerometer \
+	accelerometer_kxsd9 \
 	accelerometer_lis302 \
 	\
 	audio \
@@ -14,7 +17,10 @@ SUBDIRS = \
     router_palmpre \
 	player_alsa \
 	\
+	backlight_omappanel \
+	\
 	kernel26_display \
+	kernel26_firmwareloader \
 	kernel26_leds \
 	kernel26_powersupply \
 	kernel26_rtc \
@@ -27,9 +33,11 @@ SUBDIRS = \
 	thinkpad_powercontrol \
 	\
 	vibrator_ledclass \
+	vibrator_omapvibe \
 	vibrator_timedoutputclass \
     \
     palmpre_powersupply \
+    proximity_palmpre \
 	\
 	$(NULL)
 
