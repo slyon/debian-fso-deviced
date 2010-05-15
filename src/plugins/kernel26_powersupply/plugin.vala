@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
@@ -25,14 +25,16 @@ namespace Kernel26
 /**
  * Implementation of org.freesmartphone.Device.PowerSupply for the Kernel26 Power-Class Device
  **/
-class PowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.AbstractObject
+class PowerSupply : FreeSmartphone.Device.PowerSupply,
+                    FreeSmartphone.Info,
+                    FsoFramework.AbstractObject
 {
     FsoFramework.Subsystem subsystem;
 
     private string sysfsnode;
     private static uint counter;
 
-    // internal, so it can be accessable from aggregate power supply
+    // internal (accessible for aggregate power supply)
     internal string name;
     internal string typ;
     internal FreeSmartphone.Device.PowerStatus status = FreeSmartphone.Device.PowerStatus.UNKNOWN;
@@ -59,12 +61,12 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.AbstractObje
                                          "%s/%u".printf( FsoFramework.Device.PowerSupplyServicePath, counter++ ),
                                          this );
 
-        logger.info( "created new PowerSupply object." );
+        logger.info( "Created" );
     }
 
     public override string repr()
     {
-        return "<FsoFramework.Device.PowerSupply @ %s>".printf( sysfsnode );
+        return @"<$sysfsnode>";
     }
 
     public bool onIdle()
@@ -115,7 +117,7 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.AbstractObje
             return -1;
 
         // try the capacity node first, this one is not supported by all power class devices
-        var value = FsoFramework.FileHandling.read( "%s/capacity".printf( sysfsnode ) );
+        var value = FsoFramework.FileHandling.readIfPresent( "%s/capacity".printf( sysfsnode ) );
         if ( value != "" )
             return value.to_int();
 
@@ -133,9 +135,8 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.AbstractObje
     }
 
     //
-    // FreeSmartphone.Device.PowerStatus (DBUS API)
+    // FreeSmartphone.Info (DBUS API)
     //
-
     public async HashTable<string,Value?> get_info() throws DBus.Error
     {
         var res = new HashTable<string,Value?>( str_hash, str_equal );
@@ -159,6 +160,9 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.AbstractObje
         return res;
     }
 
+    //
+    // FreeSmartphone.Device.PowerStatus (DBUS API)
+    //
     public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBus.Error
     {
         return status;
@@ -296,7 +300,7 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
 
         assert( status != null );
 
-        logger.info( "Got power status change notification for %s: %s".printf( name, status ) );
+        logger.info( "Got power status change notification for $name: $status" );
 
         // set status in instance
         foreach ( var supply in instances )
@@ -349,8 +353,8 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
         // first, check whether we have enough information to compute the status at all
         foreach ( var supply in instances )
         {
-            logger.debug( "supply %s status = %d".printf( supply.name, supply.status ) );
-            logger.debug( "supply %s type = %s".printf( supply.name, supply.typ ) );
+            assert( logger.debug( @"supply $(supply.name) status = $(supply.status)" ) );
+            assert( logger.debug( @"supply $(supply.name) type = $(supply.typ)" ) );
 
             if ( supply.status == FreeSmartphone.Device.PowerStatus.UNKNOWN )
             {
@@ -371,7 +375,7 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
 
         if ( !statusForAll )
         {
-            logger.debug( "^^^ not enough information present to compute overall status" );
+            assert( logger.debug( "^^^ not enough information present to compute overall status" ) );
             return;
         }
 
