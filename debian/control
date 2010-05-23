@@ -12,7 +12,7 @@ Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-deviced.git;a=summary
 
 Package: fso-deviced
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
 Description: freesmartphone.org device daemon
  This daemon implements the freesmartphone.org Device API
  .
