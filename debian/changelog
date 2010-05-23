@@ -1,7 +1,6 @@
 fso-deviced (0+git20100501-1~fso) pkg-fso; urgency=low
 
   * New upstream snapshot
-  * Update standards
 
  -- Heiko Stuebner <heiko@sntech.de>  Sun, 23 May 2010 16:36:24 +0200
 
