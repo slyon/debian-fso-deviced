@@ -1,0 +1,12 @@
+diff -Nur -x '*.orig' -x '*~' fso-deviced-0+git20100110//src/plugins/kernel26_rfkill/plugin.vala fso-deviced-0+git20100110.new//src/plugins/kernel26_rfkill/plugin.vala
+--- fso-deviced-0+git20100110//src/plugins/kernel26_rfkill/plugin.vala	2010-02-22 01:06:06.000000000 +0100
++++ fso-deviced-0+git20100110.new//src/plugins/kernel26_rfkill/plugin.vala	2010-02-22 01:48:10.000000000 +0100
+@@ -98,7 +98,7 @@
+         watch = channel.add_watch( IOCondition.IN | IOCondition.HUP, onActionFromRfKill );
+     }
+ 
+-    protected static bool onActionFromRfKill( IOChannel source, IOCondition condition )
++    internal static bool onActionFromRfKill( IOChannel source, IOCondition condition )
+     {
+         if ( ( condition & IOCondition.HUP ) == IOCondition.HUP )
+         {
