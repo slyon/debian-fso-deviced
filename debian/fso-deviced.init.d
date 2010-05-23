@@ -24,8 +24,8 @@
 #
 ### BEGIN INIT INFO
 # Provides:          fso-deviced
-# Required-Start:    $local_fs $syslog dbus
-# Required-Stop:     $local_fs $syslog dbus
+# Required-Start:    $remote_fs $syslog dbus
+# Required-Stop:     $remote_fs $syslog dbus
 # Should-Start:
 # Should-Stop:
 # Default-Start:     2 3 4 5
