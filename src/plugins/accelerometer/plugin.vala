@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,26 +21,10 @@ using GLib;
 
 namespace Hardware
 {
-    internal char[] buffer;
-    internal const uint BUFFER_SIZE = 512;
-
     internal const string HW_ACCEL_PLUGIN_NAME = "fsodevice.accelerometer";
 
-    internal const int kHistorySize = 150;
-    internal const float kFilteringFactor = 0.1f;
-
-    internal const int MOVEMENT_IDLE_THRESHOLD = 20;
-    internal const int MOVEMENT_BUSY_THRESHOLD = 50;
-
-    internal const int FLAT_SURFACE_Z_MIDDLE = 1000;
-    internal const int FLAT_SURFACE_Z_RADIUS = 100;
-
-    internal struct AccelerometerValue
-    {
-        int x;
-        int y;
-        int z;
-    }
+    internal const int DEFAULT_DEADZONE = 180;
+    internal const int DEFAULT_DELAY = 1000;
 
 /**
  * Implementation of org.freesmartphone.Device.Orientation for an Accelerometer device
@@ -53,27 +37,15 @@ class Accelerometer : FreeSmartphone.Device.Orientation,
 
     private FsoFramework.Subsystem subsystem;
 
-    private Ternary flat;
-    private Ternary landscape;
-    private Ternary facedown;
-    private Ternary reverse;
+    private int deadzone;
+    private int delay;
+    private uint timeout;
+
+    private bool flat;
+    private bool landscape;
+    private bool faceup;
+    private bool reverse;
     private string orientation;
-
-    private AccelerometerValue[] history;
-    private AccelerometerValue acceleration;
-
-    private uint movementIdleThreshold;
-    private uint movementBusyThreshold;
-
-    private bool moving = false;
-
-    private uint nextIndex = 0;
-
-    public enum Polarity
-    {
-        PLUS,
-        MINUS,
-    }
 
     public enum Ternary
     {
@@ -86,13 +58,14 @@ class Accelerometer : FreeSmartphone.Device.Orientation,
     {
         this.subsystem = subsystem;
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         FsoFramework.Device.OrientationServicePath,
-                                         this );
-        logger.info( "Created new Orientation object." );
+        subsystem.registerObjectForService<FreeSmartphone.Info>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.OrientationServicePath, this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Orientation>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.OrientationServicePath, this );
 
-        history = new AccelerometerValue[kHistorySize];
+        deadzone = config.intValue( HW_ACCEL_PLUGIN_NAME, "deadzone", DEFAULT_DEADZONE);
+        delay = config.intValue( HW_ACCEL_PLUGIN_NAME, "delay", DEFAULT_DELAY);
+
+        generateOrientationSignal( false, false, true, false );
+        logger.info( "Created new Orientation object." );
     }
 
     public override string repr()
@@ -131,9 +104,6 @@ class Accelerometer : FreeSmartphone.Device.Orientation,
             logger.info( "Ready. Using accelerometer plugin '%s'".printf( devicetype ) );
 
             accelerometer.accelerate.connect( this.onAcceleration );
-
-            movementIdleThreshold = config.intValue( Hardware.HW_ACCEL_PLUGIN_NAME, "movement_idle_threshold", Hardware.MOVEMENT_IDLE_THRESHOLD );
-            movementBusyThreshold = config.intValue( Hardware.HW_ACCEL_PLUGIN_NAME, "movement_busy_threshold", Hardware.MOVEMENT_BUSY_THRESHOLD );
         }
         accelerometer.start();
     }
@@ -160,121 +130,70 @@ class Accelerometer : FreeSmartphone.Device.Orientation,
         message( @"onAcceleration: acceleration values: $x, $y, $z" ) );
 #endif
 
-        /*
+        var xpol = polarity( x );
+        var ypol = polarity( y );
+        var zpol = polarity( z );
 
-        // apply lowpass filter to smooth curve
-        acceleration.x = (int) Math.lround( x * kFilteringFactor + acceleration.x * (1.0 - kFilteringFactor) );
-        history[nextIndex].x = x - acceleration.x;
-        acceleration.y = (int) Math.lround( y * kFilteringFactor + acceleration.y * (1.0 - kFilteringFactor) );
-        history[nextIndex].y = y - acceleration.y;
-        acceleration.z = (int) Math.lround( z * kFilteringFactor + acceleration.z * (1.0 - kFilteringFactor) );
-        history[nextIndex].z = z - acceleration.z;
+        bool flat = ( xpol == Ternary.UNKNOWN && ypol == Ternary.UNKNOWN ? true : false );
+        bool faceup = ( zpol == Ternary.UNKNOWN ? this.faceup : zpol == Ternary.TRUE );
+        bool landscape = ( xpol == Ternary.UNKNOWN || ypol == Ternary.UNKNOWN ? this.landscape
+                         : ( xpol != ypol ? true : false ) );
+        bool reverse = ( xpol == Ternary.UNKNOWN ? this.reverse : xpol == Ternary.TRUE );
 
-        logger.info( "Current acceleration delta: %d, %d, %d".printf( history[nextIndex].x, history[nextIndex].y, history[nextIndex].z ) );
-
-        uint movement = (uint) Math.sqrtf( (float) ( history[nextIndex].x * history[nextIndex].x ) + ( history[nextIndex].y * history[nextIndex].y ) + ( history[nextIndex].z * history[nextIndex].z ) );
-
-        if ( !moving && movement > movementBusyThreshold )
-        {
-            logger.debug( "Started moving (%u > %u)...".printf( movement, movementBusyThreshold ) );
-            moving = true;
-        }
-
-        if ( moving && movement < movementIdleThreshold )
-        {
-            logger.debug( "Stopped moving (%u < %u)...".printf( movement, movementIdleThreshold ) );
-            moving = false;
-            generateOrientationSignal( history[nextIndex].x, history[nextIndex].y, history[nextIndex].z );
-        }
-
-        // Advance buffer pointer to next position or reset to zero.
-        nextIndex = (nextIndex + 1) % kHistorySize;
-
-        */
-
-        var flat = ( intWithinRegion( z, FLAT_SURFACE_Z_MIDDLE, FLAT_SURFACE_Z_RADIUS ) || intWithinRegion( z, -FLAT_SURFACE_Z_MIDDLE, FLAT_SURFACE_Z_RADIUS ) ) ? Ternary.TRUE : Ternary.FALSE;
-
-        var facedown = ( polarity( z ) == Polarity.MINUS ) ? Ternary.TRUE : Ternary.FALSE;
-        var landscape = ( polarity( x ) != polarity( y ) ) ? Ternary.TRUE : Ternary.FALSE;
-        var reverse = ( polarity( x ) == Polarity.PLUS ) ? Ternary.TRUE : Ternary.FALSE;
-
-        generateOrientationSignal( flat, landscape, facedown, reverse );
+        generateOrientationSignal( flat, landscape, faceup, reverse );
     }
 
-    private Polarity polarity( int value )
+    private Ternary polarity( int value )
     {
-        return value >= 0 ? Polarity.PLUS : Polarity.MINUS;
+        if ( value < -deadzone || value > deadzone )
+            return ( value > 0 ? Ternary.TRUE : Ternary.FALSE );
+
+        return Ternary.UNKNOWN;
     }
 
-    private bool intWithinRegion( int value, int middle, int region )
+    public void generateOrientationSignal( bool flat, bool landscape, bool faceup, bool reverse )
     {
-        int bounds1 = middle - region;
-        int bounds2 = middle + region;
-        var res = ( bounds1 > bounds2 ) ? value > bounds2 && value < bounds1 : value > bounds1 && value < bounds2;
-#if DEBUG
-        message( @"intWithinRegion: $value, $middle, $region. Answer = $res" );
-#endif
+        bool change = (flat      != this.flat      || faceup  != this.faceup ||
+                       landscape != this.landscape || reverse != this.reverse );
 
-        return res; //( value > lowerbounds && value < upperbounds );
+        orientation = "%s %s %s %s".printf( flat      ? "flat"      : "held",
+                                            faceup    ? "faceup"    : "facedown",
+                                            landscape ? "landscape" : "portrait",
+                                            reverse   ? "reverse"   : "normal" );
+
+        this.flat      = flat;
+        this.faceup    = faceup;
+        this.landscape = landscape;
+        this.reverse   = reverse;
+
+        if ( !change )
+            return;
+
+        if ( delay == 0 )
+        {
+            this.orientation_changed( orientation );
+            return;
+        }
+
+        if ( timeout != 0 )
+            Source.remove( timeout );
+        timeout = Timeout.add( delay, onTimeout );
     }
 
-    public void generateOrientationSignal( Ternary flat, Ternary landscape, Ternary facedown, Ternary reverse )
+    private bool onTimeout()
     {
-        if ( flat == Ternary.TRUE )
-        {
-            orientation = "flat %s".printf( facedown == Ternary.TRUE ? "facedown" : "faceup" );
-        }
-        else
-        {
-            orientation = "held %s %s %s".printf( landscape == Ternary.TRUE ? "landscape" : "portrait",
-                                                  facedown == Ternary.TRUE ? "facedown" : "faceup",
-                                                  reverse == Ternary.TRUE ? "reverse" : "normal" );
-        }
-
-        var signal = "";
-
-        if ( flat != this.flat )
-        {
-            this.flat = flat;
-            signal += flat == Ternary.TRUE ? "flat " : "held ";
-        }
-
-        if ( facedown != this.facedown )
-        {
-            this.facedown = facedown;
-            signal += facedown == Ternary.TRUE ? "facedown " : "faceup ";
-        }
-
-        // additional info only valid, if not laying flat
-        if ( flat == Ternary.FALSE )
-        {
-            if ( landscape != this.landscape )
-            {
-                this.landscape = landscape;
-                signal += landscape == Ternary.TRUE ? "landscape " : "portrait ";
-            }
-
-            if ( reverse != this.reverse )
-            {
-                this.reverse = reverse;
-                signal += reverse == Ternary.TRUE ? "reverse " : "normal ";
-            }
-        }
-
-        assert( logger.debug( @"Full orientation = $orientation. Sending change signal for $signal" ) );
-        if ( signal.length > 0 )
-        {
-            this.orientation_changed( signal );
-        }
+        this.orientation_changed( orientation );
+        timeout = 0;
+        return false;
     }
 
     //
     // FreeSmartphone.Info (DBUS)
     //
-    public async HashTable<string,Value?> get_info()
+    public async HashTable<string,Variant> get_info() throws DBusError, IOError
     {
         //FIXME: implement
-        var dict = new HashTable<string,Value?>( str_hash, str_equal );
+        var dict = new HashTable<string,Variant>( str_hash, str_equal );
         return dict;
     }
 
@@ -367,3 +286,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab
