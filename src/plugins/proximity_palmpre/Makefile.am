@@ -5,7 +5,7 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.proximity_palmpre\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -16,9 +16,9 @@ VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
-	--pkg fsoframework-2.0
+	--pkg fsoframework-2.0 \
+	--pkg fsoresource-2.0
 
 #
 # plugin
@@ -33,6 +33,10 @@ $(proximity_palmpre_la_SOURCES): $(proximity_palmpre_la_VALASOURCES)
 proximity_palmpre_la_LIBADD = $(progs_ldadd)
 proximity_palmpre_la_LDFLAGS = -no-undefined -module -avoid-version
 proximity_palmpre_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(proximity_palmpre_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

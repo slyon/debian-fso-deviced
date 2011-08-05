@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -67,15 +67,17 @@ public class BasePowerControl : ISimplePowerControl, FreeSmartphone.Device.Power
     //
     // DBUS API (org.freesmartphone.Device.PowerControl)
     //
-    public async bool get_power() throws DBus.Error
+    public async bool get_power() throws DBusError, IOError
     {
         return getPower();
     }
 
-    public async void set_power( bool on ) throws DBus.Error
+    public async void set_power( bool on ) throws DBusError, IOError
     {
         setPower( on );
     }
 }
 
 }
+
+// vim:ts=4:sw=4:expandtab

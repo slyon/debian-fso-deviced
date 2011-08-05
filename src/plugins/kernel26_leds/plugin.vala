@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+/*
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ class Led : FreeSmartphone.Device.LED, FsoFramework.AbstractObject
         this.max_brightness = FsoFramework.FileHandling.read( this.sysfsnode + "/max_brightness" ).to_int();
         if ( max_brightness == 0 )
         {
-            max_brightness = 255;
+            max_brightness = FsoFramework.theConfig.intValue(MODULE_NAME, "max_brightness", 255);
         }
 
         this.brightness = sysfsnode + "/brightness";
@@ -58,14 +58,7 @@ class Led : FreeSmartphone.Device.LED, FsoFramework.AbstractObject
             return;
         }
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        /*
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%u".printf( FsoFramework.Device.LedServicePath, counter++ ),
-                                         this );
-        */
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%s".printf( FsoFramework.Device.LedServicePath, Path.get_basename( sysfsnode ) ), this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.LED>( FsoFramework.Device.ServiceDBusName, "%s/%s".printf( FsoFramework.Device.LedServicePath, Path.get_basename( sysfsnode ) ), this );
         // FIXME: remove in release code, can be done lazily
         initTriggers();
 
@@ -128,12 +121,12 @@ class Led : FreeSmartphone.Device.LED, FsoFramework.AbstractObject
     //
     // FreeSmartphone.Device.LED (DBUS API)
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return Path.get_basename( sysfsnode );
     }
 
-    public async void set_brightness( int brightness ) throws DBus.Error
+    public async void set_brightness( int brightness ) throws DBusError, IOError
     {
         var percent = _percentToValue( brightness );
 
@@ -143,7 +136,7 @@ class Led : FreeSmartphone.Device.LED, FsoFramework.AbstractObject
         FsoFramework.FileHandling.write( percent.to_string(), this.brightness );
     }
 
-    public async void set_blinking( int delay_on, int delay_off ) throws FreeSmartphone.Error, DBus.Error
+    public async void set_blinking( int delay_on, int delay_off ) throws FreeSmartphone.Error, DBusError, IOError
     {
         initTriggers();
 
@@ -157,17 +150,17 @@ class Led : FreeSmartphone.Device.LED, FsoFramework.AbstractObject
         FsoFramework.FileHandling.write( delay_off.to_string(), this.sysfsnode + "/delay_off" );
     }
 
-    public async void blink_seconds( int seconds, int delay_on, int delay_off ) throws FreeSmartphone.Error, DBus.Error
+    public async void blink_seconds( int seconds, int delay_on, int delay_off ) throws FreeSmartphone.Error, DBusError, IOError
     {
         if ( seconds < 1 )
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Blinking timeout needs to be at least 1 second." );
 
-        set_blinking( delay_on, delay_off );
+        yield set_blinking( delay_on, delay_off );
 
         setTimeout( seconds );
     }
 
-    public async void set_networking( string iface, string mode ) throws FreeSmartphone.Error, DBus.Error
+    public async void set_networking( string iface, string mode ) throws FreeSmartphone.Error, DBusError, IOError
     {
         initTriggers();
 
@@ -259,3 +252,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

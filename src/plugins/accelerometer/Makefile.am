@@ -7,7 +7,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.accelerometer\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -15,14 +15,12 @@ noinst_PROGRAMS = $(TEST_PROGS)
 progs_ldadd = \
 	$(FSO_LIBS) \
 	$(GLIB_LIBS) \
-	$(DBUS_LIBS) \
 	$(top_srcdir)/src/lib/libfsodevice.la
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg linux \
 	--pkg fso-glib-1.0 \
 	--pkg fsoresource-2.0 \
@@ -42,6 +40,10 @@ $(accelerometer_la_SOURCES): $(accelerometer_la_VALASOURCES)
 accelerometer_la_LIBADD = $(progs_ldadd)
 accelerometer_la_LDFLAGS = -no-undefined -module -avoid-version
 accelerometer_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(accelerometer_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

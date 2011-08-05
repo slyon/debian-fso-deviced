@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,6 @@
  *
  */
 
-using Gee;
-
 namespace Router
 {
 
@@ -30,7 +28,7 @@ class LibAlsa : FsoDevice.BaseAudioRouter
     private const string MODULE_NAME = "fsodevice.router_alsa";
 
     private FsoDevice.SoundDevice device;
-    private HashMap<string,FsoDevice.BunchOfMixerControls> allscenarios;
+    private Gee.HashMap<string,FsoDevice.BunchOfMixerControls> allscenarios;
     private string currentscenario;
     private GLib.Queue<string> scenarios;
 
@@ -42,11 +40,18 @@ class LibAlsa : FsoDevice.BaseAudioRouter
         initScenarios();
         if ( currentscenario != "unknown" )
         {
-            device.setAllMixerControls( allscenarios[currentscenario].controls );
+            try
+            {
+                device.setAllMixerControls( allscenarios[currentscenario].controls );
+            }
+            catch ( FsoDevice.SoundError e )
+            {
+                FsoFramework.theLogger.warning( @"Setting mixer controls for scenario $currentscenario failed: $(e.message)" );
+            }
         }
     }
 
-    private void addScenario( string scenario, File file )
+    private void addScenario( string scenario, File file, uint idxMainVolume )
     {
         FsoDevice.MixerControl[] controls = {};
 
@@ -62,16 +67,23 @@ class LibAlsa : FsoDevice.BaseAudioRouter
                 var stripped = line.strip();
                 if ( stripped == "" || stripped.has_prefix( "#" ) ) // skip empty lines and comments
                     continue;
-                var control = device.controlForString( line );
-                controls += control;
+                try
+                {
+                    var control = device.controlForString( line );
+                    controls += control;
+                }
+                catch ( FsoDevice.SoundError e )
+                {
+                    FsoFramework.theLogger.warning( @"Invalid line '$line'. Ignoring." );
+                }
             }
 #if DEBUG
             debug( "Scenario %s successfully read from file %s".printf( scenario, file.get_path() ) );
 #endif
-            var bunch = new FsoDevice.BunchOfMixerControls( controls );
+            var bunch = new FsoDevice.BunchOfMixerControls( controls, idxMainVolume );
             allscenarios[scenario] = bunch;
         }
-        catch ( IOError e )
+        catch ( Error e )
         {
             FsoFramework.theLogger.warning( "%s".printf( e.message ) );
         }
@@ -82,7 +94,7 @@ class LibAlsa : FsoDevice.BaseAudioRouter
         configurationPath = FsoFramework.Utility.machineConfigurationDir() + "/alsa.conf";
 
         scenarios = new GLib.Queue<string>();
-        allscenarios = new HashMap<string,FsoDevice.BunchOfMixerControls>( str_hash, str_equal );
+        allscenarios = new Gee.HashMap<string,FsoDevice.BunchOfMixerControls>();
         currentscenario = "unknown";
 
         // init scenarios
@@ -109,7 +121,8 @@ class LibAlsa : FsoDevice.BaseAudioRouter
                 var scenario = section.split( "." )[1];
                 if ( scenario != "" )
                 {
-                    FsoFramework.theLogger.debug( "Found scenario '%s'".printf( scenario ) );
+                    var idxMainVolume = alsaconf.intValue( section, "main_volume", 0 );
+                    FsoFramework.theLogger.debug( "Found scenario '%s' - main volume = %d".printf( scenario, idxMainVolume ) );
 
                     var file = File.new_for_path( Path.build_filename( dataPath, scenario ) );
                     if ( !file.query_exists(null) )
@@ -118,7 +131,7 @@ class LibAlsa : FsoDevice.BaseAudioRouter
                     }
                     else
                     {
-                        addScenario( scenario, file );
+                        addScenario( scenario, file, idxMainVolume );
                     }
                 }
             }
@@ -141,15 +154,14 @@ class LibAlsa : FsoDevice.BaseAudioRouter
             try
             {
                 device = FsoDevice.SoundDevice.create( "default" );
+                var bunch = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
+                allscenarios["current"] = bunch;
+                currentscenario = "current";
             }
             catch ( FsoDevice.SoundError e )
             {
-                FsoFramework.theLogger.warning( @"Sound card problem: $(e.message)" );
-                return;
+                FsoFramework.theLogger.warning( @"Sound card or mixer problem: $(e.message)" );
             }
-            var bunch = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
-            allscenarios["current"] = bunch;
-            currentscenario = "current";
         }
     }
 
@@ -158,7 +170,14 @@ class LibAlsa : FsoDevice.BaseAudioRouter
         if ( currentscenario != scenario )
         {
             assert( device != null );
-            device.setAllMixerControls( allscenarios[scenario].controls );
+            try
+            {
+                device.setAllMixerControls( allscenarios[scenario].controls );
+            }
+            catch ( FsoDevice.SoundError e )
+            {
+                FsoFramework.theLogger.warning( @"Failed to update scenario '$scenario' to get changes: $(e.message)" );
+            }
 
             currentscenario = scenario;
             //this.scenario( currentscenario, "N/A" ); // DBUS SIGNAL
@@ -178,37 +197,53 @@ class LibAlsa : FsoDevice.BaseAudioRouter
             return;
         }
 
+        var idxMainVolume = allscenarios[name].idxMainVolume;
+
         if ( name == currentscenario )
         {
             FsoFramework.theLogger.info( @"Scenario $name has been changed (being also the current scenario); invalidating cache and reloading" );
             var file = File.new_for_path( Path.build_filename( dataPath, name ) );
-            if ( !file.query_exists(null) )
+            if ( !file.query_exists( null ) )
             {
                 FsoFramework.theLogger.warning( @"Scenario file $(file.get_path()) doesn't exist. Ignoring." );
             }
             else
             {
-                addScenario( name, file );
-                device.setAllMixerControls( allscenarios[name].controls );
+                addScenario( name, file, idxMainVolume );
+                try
+                {
+                    device.setAllMixerControls( allscenarios[name].controls );
+                }
+                catch ( FsoDevice.SoundError e )
+                {
+                    FsoFramework.theLogger.warning( @"Failed to set mixer controls for scenario $name: $(e.message)" );
+                }
             }
         }
         else
         {
             FsoFramework.theLogger.info( @"Scenario $name has been changed; invalidating cache for this." );
-            // save current one
-            var scene = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
-            // reload changed one from disk
-            var file = File.new_for_path( Path.build_filename( dataPath, name ) );
-            if ( !file.query_exists(null) )
+            try
             {
-                FsoFramework.theLogger.warning( @"Scenario file $(file.get_path()) doesn't exist. Ignoring." );
+                // save current one
+                var scene = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
+                // reload changed one from disk
+                var file = File.new_for_path( Path.build_filename( dataPath, name ) );
+                if ( !file.query_exists(null) )
+                {
+                    FsoFramework.theLogger.warning( @"Scenario file $(file.get_path()) doesn't exist. Ignoring." );
+                }
+                else
+                {
+                    addScenario( name, file, idxMainVolume );
+                }
+                // restore saved one
+                device.setAllMixerControls( scene.controls );
             }
-            else
+            catch ( FsoDevice.SoundError e )
             {
-                addScenario( name, file );
+                FsoFramework.theLogger.warning( @"Failed invalidating scenario $name: $(e.message)" );
             }
-            // restore saved one
-            device.setAllMixerControls( scene.controls );
         }
     }
 
@@ -255,9 +290,16 @@ class LibAlsa : FsoDevice.BaseAudioRouter
 
     public override void saveScenario( string scenario )
     {
-        var scene = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
-        var filename = Path.build_filename( dataPath, scenario );
-        FsoFramework.FileHandling.write( scene.to_string(), filename );
+        try
+        {
+            var scene = new FsoDevice.BunchOfMixerControls( device.allMixerControls() );
+            var filename = Path.build_filename( dataPath, scenario );
+            FsoFramework.FileHandling.write( scene.to_string(), filename );
+        }
+        catch ( Error e )
+        {
+            FsoFramework.theLogger.warning( @"Saving scenario $scenario failed: $(e.message)" );
+        }
     }
 
     public override uint8 currentVolume() throws FreeSmartphone.Error
@@ -309,3 +351,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

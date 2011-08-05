@@ -5,18 +5,20 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.backlight_omappanel\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
 
-progs_ldadd = $(FSO_LIBS) $(DBUS_LIBS) $(top_srcdir)/src/lib/libfsodevice.la
+progs_ldadd = \
+	$(FSO_LIBS) \
+	$(top_srcdir)/src/lib/libfsodevice.la \
+	$(NULL)
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0
 
@@ -33,6 +35,10 @@ $(backlight_omappanel_la_SOURCES): $(backlight_omappanel_la_VALASOURCES)
 backlight_omappanel_la_LIBADD = $(progs_ldadd)
 backlight_omappanel_la_LDFLAGS = -no-undefined -module -avoid-version
 backlight_omappanel_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(backlight_omappanel_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

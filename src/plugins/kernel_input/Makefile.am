@@ -3,28 +3,28 @@ include $(top_srcdir)/Makefile.decl
 NULL =
 
 AM_CFLAGS = \
-	-I$(top_srcdir) \
+	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.kernel_input\" \
 	$(NULL)
 
 progs_ldadd = \
 	$(top_srcdir)/src/lib/libfsodevice.la \
 	$(FSO_LIBS) \
-	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
 	$(NULL)
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
-	--vapidir $(top_srcdir)/fsoframework \
+	--vapidir $(top_srcdir)/src/lib \
+	--vapidir $(top_srcdir)/vapi \
 	--pkg glib-2.0 \
 	--pkg gee-1.0 \
-	--pkg dbus-glib-1 \
 	--pkg linux \
 	--pkg fso-glib-1.0 \
-	--pkg fsoframework-2.0
+	--pkg fsoframework-2.0 \
+	--pkg fsodevice-2.0
 
 if WANT_DEBUG
 VALAC_ARGS += -g -D DEBUG
@@ -44,6 +44,10 @@ $(kernel_input_la_SOURCES): $(kernel_input_la_VALASOURCES)
 kernel_input_la_LIBADD = $(progs_ldadd)
 kernel_input_la_LDFLAGS = -no-undefined -module -avoid-version
 kernel_input_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(kernel_input_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

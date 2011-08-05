@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,10 +56,8 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply,
 
         Idle.add( onIdle );
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%u".printf( FsoFramework.Device.PowerSupplyServicePath, counter++ ),
-                                         this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.PowerSupply>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.PowerSupplyServicePath, counter ), this );
+        subsystem.registerObjectForService<FreeSmartphone.Info>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.PowerSupplyServicePath, counter++ ), this );
 
         logger.info( "Created" );
     }
@@ -74,18 +72,20 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply,
         // trigger initial coldplug change notification, if we are on a real sysfs
         if ( sysfsnode.has_prefix( "/sys" ) )
         {
-            logger.debug( "Triggering initial coldplug change notification" );
+            assert( logger.debug( "Triggering initial coldplug change notification" ) );
             FsoFramework.FileHandling.write( "change", "%s/uevent".printf( sysfsnode ) );
         }
         else
         {
-            logger.debug( "Synthesizing initial coldplug change notification" );
+            assert( logger.debug( "Synthesizing initial coldplug change notification" ) );
             var uevent = FsoFramework.FileHandling.read( "%s/uevent".printf( sysfsnode ) );
             var parts = uevent.split( "\n" );
             var properties = new HashTable<string, string>( str_hash, str_equal );
             foreach ( var part in parts )
             {
+#if DEBUG
                 message( "%s", part );
+#endif
                 var elements = part.split( "=" );
                 if ( elements.length == 2 )
                 {
@@ -125,11 +125,17 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply,
         message( "capacity node not available, using energy_full and energy_now" );
 #endif
 
-        // fall back to energy_full and energy_now
-        var energy_full = FsoFramework.FileHandling.read( "%s/energy_full".printf( sysfsnode ) );
-        var energy_now = FsoFramework.FileHandling.read( "%s/energy_now".printf( sysfsnode ) );
+        // then, try energy_full and energy_now
+        var energy_full = FsoFramework.FileHandling.readIfPresent( "%s/energy_full".printf( sysfsnode ) );
+        var energy_now = FsoFramework.FileHandling.readIfPresent( "%s/energy_now".printf( sysfsnode ) );
         if ( energy_full != "" && energy_now != "" )
             return (int) ( ( energy_now.to_double()  / energy_full.to_double() ) * 100.0 );
+
+        // as a last resort, try charge_full and charge_now
+        var charge_full = FsoFramework.FileHandling.readIfPresent( "%s/charge_full".printf( sysfsnode ) );
+        var charge_now = FsoFramework.FileHandling.readIfPresent( "%s/charge_now".printf( sysfsnode ) );
+        if ( charge_full != "" && charge_now != "" )
+            return (int) ( ( charge_now.to_double()  / charge_full.to_double() ) * 100.0 );
 
         return -1;
     }
@@ -137,9 +143,9 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply,
     //
     // FreeSmartphone.Info (DBUS API)
     //
-    public async HashTable<string,Value?> get_info() throws DBus.Error
+    public async HashTable<string,Variant> get_info() throws DBusError, IOError
     {
-        var res = new HashTable<string,Value?>( str_hash, str_equal );
+        var res = new HashTable<string,Variant>( str_hash, str_equal );
         res.insert( "name", name );
 
         var dir = Dir.open( sysfsnode );
@@ -163,12 +169,12 @@ class PowerSupply : FreeSmartphone.Device.PowerSupply,
     //
     // FreeSmartphone.Device.PowerStatus (DBUS API)
     //
-    public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBus.Error
+    public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBusError, IOError
     {
         return status;
     }
 
-    public async int get_capacity() throws DBus.Error
+    public async int get_capacity() throws DBusError, IOError
     {
         return getCapacity();
     }
@@ -194,10 +200,7 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
         this.subsystem = subsystem;
         this.sysfsnode = sysfsnode;
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         FsoFramework.Device.PowerSupplyServicePath,
-                                         this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.PowerSupply>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.PowerSupplyServicePath, this );
 
         FsoFramework.BaseKObjectNotifier.addMatch( "change", "power_supply", onPowerSupplyChangeNotification );
 
@@ -247,11 +250,21 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
             logger.warning( "POWER_SUPPLY_NAME not present, ignoring power supply change notification" );
             return;
         }
+        var technology = properties.lookup( "POWER_SUPPLY_TECHNOLOGY" );
         var typ = properties.lookup( "POWER_SUPPLY_TYPE" );
         if ( typ == null )
         {
-            logger.warning( "POWER_SUPPLY_TYPE not present, ignoring power supply change notification" );
-            return;
+            logger.warning( "POWER_SUPPLY_TYPE not present, checking for POWER_SUPPLY_TECHNOLOGY..." );
+            if ( technology != null )
+            {
+                logger.warning( "Present; treating it like a battery" );
+                typ = "battery";
+            }
+            else
+            {
+                logger.warning( "Not present; treating it like an AC adapter" );
+                typ = "ac";
+            }
         }
 
         var status = "unknown";
@@ -300,7 +313,7 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
 
         assert( status != null );
 
-        logger.info( "Got power status change notification for $name: $status" );
+        logger.info( @"Got power status change notification for $name: $status" );
 
         // set status in instance
         foreach ( var supply in instances )
@@ -449,27 +462,25 @@ class AggregatePowerSupply : FreeSmartphone.Device.PowerSupply, FsoFramework.Abs
     //
     // FreeSmartphone.Device.PowerSupply (DBUS API)
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return Path.get_basename( sysfsnode );
     }
 
-    public async HashTable<string,Value?> get_info() throws DBus.Error
+    public async HashTable<string,Variant> get_info() throws DBusError, IOError
     {
+        var res = new HashTable<string,Variant>( str_hash, str_equal );
         //FIXME: add more infos
-        var value = Value( typeof(string) );
-        var res = new HashTable<string,Value?>( str_hash, str_equal );
-        value.take_string( "aggregate" );
-        res.insert( "type", value );
+        res.insert( "type", "aggregate" );
         return res;
     }
 
-    public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBus.Error
+    public async FreeSmartphone.Device.PowerStatus get_power_status() throws DBusError, IOError
     {
         return status;
     }
 
-    public async int get_capacity() throws DBus.Error
+    public async int get_capacity() throws DBusError, IOError
     {
         return getCapacity();
     }
@@ -529,3 +540,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

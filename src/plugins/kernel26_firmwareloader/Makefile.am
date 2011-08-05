@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.kernel26_firmwareloader\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -14,7 +14,6 @@ noinst_PROGRAMS = $(TEST_PROGS)
 progs_ldadd = \
 	$(FSO_LIBS) \
 	$(GLIB_LIBS) \
-	$(DBUS_LIBS) \
 	$(top_srcdir)/src/lib/libfsodevice.la
 
 VALAC_ARGS = \
@@ -23,7 +22,6 @@ VALAC_ARGS = \
 	--vapidir $(top_srcdir)/vapi \
 	--pkg linux \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0 \
 	--pkg fsodevice-2.0
@@ -45,6 +43,10 @@ $(kernel26_firmwareloader_la_SOURCES): $(kernel26_firmwareloader_la_VALASOURCES)
 kernel26_firmwareloader_la_LIBADD = $(progs_ldadd)
 kernel26_firmwareloader_la_LDFLAGS = -no-undefined -module -avoid-version
 kernel26_firmwareloader_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(kernel26_firmwareloader_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

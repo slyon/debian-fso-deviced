@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,8 @@ using GLib;
 
 namespace Kernel26
 {
-    internal const string FIRMWARE_PATH = "/lib/firmware";
+    internal const string MODULE_NAME = "fsodevice.kernel26_firmwareloader";
+    internal const string FIRMWARE_PATH_DEFAULT = "/lib/firmware";
 /**
  * @class Kernel26.FirmwareLoader
  *
@@ -29,9 +30,13 @@ namespace Kernel26
  **/
 internal class FirmwareLoader : FsoFramework.AbstractObject
 {
+    private string firmwarePath;
+
     public FirmwareLoader()
     {
-        FsoFramework.BaseKObjectNotifier.addMatch( "add", "firmware", onFirmwareUploadRequest );
+        FsoFramework.BaseKObjectNotifier.addMatch( "add", "firmware", onFirmwareUploadRequest ); // standard
+        FsoFramework.BaseKObjectNotifier.addMatch( "add", "compat_firmware", onFirmwareUploadRequest ); // compat-wireless
+        firmwarePath = config.stringValue( MODULE_NAME, "firmware_path", FIRMWARE_PATH_DEFAULT );
         logger.info( "Created." );
     }
 
@@ -57,7 +62,7 @@ internal class FirmwareLoader : FsoFramework.AbstractObject
 
         var loading = Path.build_filename( sysfs_root, devpath, "loading" );
         var data = Path.build_filename( sysfs_root, devpath, "data" );
-        var sourcepath = Path.build_filename( FIRMWARE_PATH, firmware );
+        var sourcepath = Path.build_filename( firmwarePath, firmware );
 
         try
         {
@@ -126,3 +131,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

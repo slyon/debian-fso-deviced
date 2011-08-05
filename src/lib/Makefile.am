@@ -7,16 +7,17 @@ AM_CPPFLAGS = \
 	$(FSO_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.lib\" \
 	$(NULL)
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/vapi \
+	--pkg linux \
 	--pkg posix \
 	--pkg alsa \
 	--pkg glib-2.0 \
 	--pkg gee-1.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoresource-2.0 \
 	--pkg fsoframework-2.0 \
@@ -35,6 +36,7 @@ libfsodevice_la_VALASOURCES = \
 	audioplayer.vala \
 	audiorouter.vala \
 	dispatcher.vala \
+	input.vala \
 	powercontrol.vala \
 	resource.vala \
 	$(NULL)

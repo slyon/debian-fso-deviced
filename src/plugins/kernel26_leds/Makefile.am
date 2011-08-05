@@ -5,18 +5,20 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.kernel26_leds\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
 
-progs_ldadd = $(FSO_LIBS) $(DBUS_LIBS) $(top_srcdir)/src/lib/libfsodevice.la
+progs_ldadd = \
+	$(FSO_LIBS) \
+	$(top_srcdir)/src/lib/libfsodevice.la \
+	$(NULL)
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0
 
@@ -33,6 +35,10 @@ $(kernel26_leds_la_SOURCES): $(kernel26_leds_la_VALASOURCES)
 kernel26_leds_la_LIBADD = $(progs_ldadd)
 kernel26_leds_la_LDFLAGS = -no-undefined -module -avoid-version
 kernel26_leds_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(kernel26_leds_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

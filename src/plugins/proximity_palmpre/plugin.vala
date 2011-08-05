@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,7 +23,7 @@ namespace Proximity
 {
     internal const string DEFAULT_INPUT_NODE = "input/event3";
     internal const int NEAR = 0;
-    internal const int FAR = 1000;
+    internal const int FAR = 100;
 
 class PalmPre : FreeSmartphone.Device.Proximity,
                 FreeSmartphone.Device.PowerControl,
@@ -36,6 +36,22 @@ class PalmPre : FreeSmartphone.Device.Proximity,
 
     private int maxvalue;
     private int minvalue;
+    private long start_timestamp;
+    private int _current_proximity = -1;
+    private int _value_timestamp = -1;
+    private int current_proximity {
+        get {return _current_proximity; }
+        set {
+            if( value != _current_proximity)
+            {
+                _current_proximity = value;
+                proximity(value);
+                TimeVal tv = TimeVal();
+                tv.get_current_time();
+                _value_timestamp = (int)(tv.tv_sec - start_timestamp);
+            }
+        }
+    }
 
     FsoFramework.Async.ReactorChannel input;
 
@@ -64,14 +80,16 @@ class PalmPre : FreeSmartphone.Device.Proximity,
 
         input = new FsoFramework.Async.ReactorChannel( fd, onInputEvent, sizeof( Linux.Input.Event ) );
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObjectWithPrefix(
-            FsoFramework.Device.ServiceDBusName,
-            FsoFramework.Device.ProximityServicePath,
-            this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Proximity>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.ProximityServicePath, this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.PowerControl>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.ProximityServicePath, this );
+
+        TimeVal tv = TimeVal();
+        tv.get_current_time();
+        start_timestamp = tv.tv_sec;
+        //disable by default
+        set_power( false );
 
         logger.info( "Created" );
-
     }
 
     public override string repr()
@@ -84,12 +102,11 @@ class PalmPre : FreeSmartphone.Device.Proximity,
         var event = (Linux.Input.Event*) data;
         if ( event->type != 4 || event->code != 1 )
         {
-            assert( logger.debug( @"Unknown event w/ type $(event->type) and code $(event->code); ignoring" ) );
+            assert( logger.debug( @"Unknown event w/ type $(event->type), code $(event->code) and value $(event->value); ignoring" ) );
             return;
         }
-
-        // send dbus signal
-        this.proximity( event->value > 0 ? 100 : 0 );
+        assert( logger.debug ( @"Using Proximity event with value $(event->value)"));
+        current_proximity = _valueToPercent( event->value );
     }
 
     private int _valueToPercent( int value )
@@ -101,27 +118,61 @@ class PalmPre : FreeSmartphone.Device.Proximity,
     //
     // FreeSmartphone.Device.Proximity (DBUS API)
     //
-    public async void get_proximity( out int proximity, out int timestamp ) throws FreeSmartphone.Error, DBus.Error
+    public async void get_proximity( out int proximity, out int timestamp ) throws FreeSmartphone.Error, DBusError, IOError
     {
-        proximity = -1;
-        timestamp = 0;
+        proximity = current_proximity;
+        timestamp = _value_timestamp;
     }
 
     //
     // FreeSmartphone.Device.PowerControl (DBUS API)
     //
-    public async bool get_power() throws DBus.Error
+    public async bool get_power() throws DBusError, IOError
     {
         var contents = FsoFramework.FileHandling.read( powernode ) ?? "";
         return contents.strip() == "1";
     }
 
-    public async void set_power( bool on ) throws DBus.Error
+    public async void set_power( bool on ) throws DBusError, IOError
     {
         var contents = on ? "1" : "0";
         FsoFramework.FileHandling.write( contents, powernode );
     }
 
+}
+/**
+ * Implementation of org.freesmartphone.Resource for the Palmpre Proximity Resource
+ **/
+public class PalmPreResource : FsoFramework.AbstractDBusResource
+{
+    bool on = false;
+    public PalmPreResource( FsoFramework.Subsystem subsystem )
+    {
+        base( "Proximity", subsystem );
+    }
+    public override async void enableResource()
+    {
+        if (on)
+            return;
+        yield instance.set_power( true );
+        on = true;
+    }
+
+    public override async void disableResource()
+    {
+        if (!on)
+            return;
+        yield instance.set_power( false );
+        on = false;
+    }
+
+    public override async void suspendResource()
+    {
+    }
+
+    public override async void resumeResource()
+    {
+    }
 }
 
 } /* namespace */
@@ -129,6 +180,7 @@ class PalmPre : FreeSmartphone.Device.Proximity,
 static string sysfs_root;
 static string devfs_root;
 Proximity.PalmPre instance;
+Proximity.PalmPreResource resource;
 
 /**
  * This function gets called on plugin initialization time.
@@ -142,10 +194,11 @@ public static string fso_factory_function( FsoFramework.Subsystem subsystem ) th
     var config = FsoFramework.theConfig;
     devfs_root = config.stringValue( "cornucopia", "devfs_root", "/dev" );
     sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
-    var dirname = GLib.Path.build_filename( sysfs_root, "class", "input", "input3" );
+    var dirname = GLib.Path.build_filename( sysfs_root, "devices", "platform", "hsdl9100_proximity", "input", "input3" );
     if ( FsoFramework.FileHandling.isPresent( dirname ) )
     {
         instance = new Proximity.PalmPre( subsystem, dirname );
+        resource = new Proximity.PalmPreResource( subsystem );
     }
     else
     {
@@ -172,3 +225,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

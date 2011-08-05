@@ -1,5 +1,5 @@
 /*
- * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  * (C) 2009 Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -69,10 +69,8 @@ class OmapPanel : FreeSmartphone.Device.Display,
 
         debug( @"smoothup = $smoothup, smoothdown = $smoothdown" );
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                        "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter++ ),
-                        this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Display>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter ), this );
+        subsystem.registerObjectForService<FreeSmartphone.Info>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter++ ), this );
 
         logger.info( @"Created w/ max brightness = $max_brightness, smooth up = $smoothup, smooth down = $smoothdown" );
     }
@@ -86,9 +84,10 @@ class OmapPanel : FreeSmartphone.Device.Display,
     {
         /*
         if ( fb_fd != -1 )
-            Posix.ioctl( fb_fd, FBIOBLANK, on ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN );
+            Linux.ioctl( fb_fd, FBIOBLANK, on ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN );
         */
         FsoFramework.FileHandling.write( on ? "1" : "0", this.state );
+        backlight_power( on ); // DBUS SIGNAL 
     }
 
     private int _valueToPercent( int value )
@@ -191,11 +190,11 @@ class OmapPanel : FreeSmartphone.Device.Display,
     //
     // FreeSmartphone.Info (DBUS API)
     //
-    public async HashTable<string, Value?> get_info()
+    public async HashTable<string,Variant> get_info() throws DBusError, IOError
     {
         string _leaf;
-        var val = Value( typeof(string) );
-        HashTable<string, Value?> info_table = new HashTable<string, Value?>( str_hash, str_equal );
+        Variant val;
+        HashTable<string,Variant> info_table = new HashTable<string,Variant>( str_hash, str_equal );
         /* Just read all the files in the sysfs path and return it as a{ss} */
         try
         {
@@ -204,7 +203,7 @@ class OmapPanel : FreeSmartphone.Device.Display,
             {
                 if( FileUtils.test (this.sysfsnode + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent" )
                 {
-                    val.take_string( FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf ).strip());
+                    val = FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf ).strip();
                     info_table.insert( _leaf, val );
                 }
             }
@@ -231,13 +230,12 @@ class OmapPanel : FreeSmartphone.Device.Display,
 
     public async bool get_backlight_power()
     {
-        return FsoFramework.FileHandling.read( this.state ).to_int() == 0;
+        return FsoFramework.FileHandling.read( this.state ).to_int() == 1;
     }
 
     public async void set_backlight_power( bool power )
     {
-        var value = power ? "0" : "1";
-        FsoFramework.FileHandling.write( value, this.state );
+        _setBacklightPower( power );
     }
 }
 
@@ -274,3 +272,5 @@ public static void fso_register_function( TypeModule module )
 {
     FsoFramework.theLogger.debug( "fsodevice.backlight_omappanel fso_register_function()" );
 }
+
+// vim:ts=4:sw=4:expandtab

@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+/*
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,10 +39,9 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
 
     private string sysfsnode;
     private string devnode;
-    private int rtc_fd;
+    private int rtc_fd = -1;
     private IOChannel channel;
     private uint watch;
-    private static uint counter;
 
     public Rtc( FsoFramework.Subsystem subsystem, string sysfsnode )
     {
@@ -50,18 +49,14 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
         this.sysfsnode = sysfsnode;
         this.devnode = sysfsnode.replace( "/sys/class/rtc/", "/dev/" );
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%u".printf( FsoFramework.Device.RtcServicePath, counter++ ),
-                                         this );
+        subsystem.registerObjectForServiceWithPrefix<FreeSmartphone.Device.RealtimeClock>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.RtcServicePath, this );
 
-        rtc_fd = -1;
         logger.info( "Created new Rtc object." );
     }
 
     public override string repr()
     {
-        return "<FsoFramework.Device.Rtc @ %s : %s>".printf( sysfsnode, devnode );
+        return "<%s : %s>".printf( sysfsnode, devnode );
     }
 
     private void openRtc() throws FreeSmartphone.Error
@@ -118,7 +113,7 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
     {
         openRtc();
         GLib.Time t = {};
-        var res = Posix.ioctl( rtc_fd, Linux.Rtc.RTC_RD_TIME, &t );
+        var res = Linux.ioctl( rtc_fd, Linux.Rtc.RTC_RD_TIME, &t );
         closeRtc( res == -1 );
         logger.info( "RTC time equals %s".printf( t.to_string() ) );
         return (int)Linux.timegm( t );
@@ -127,30 +122,30 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
     //
     // FreeSmartphone.Device.RealtimeClock (DBUS API)
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return Path.get_basename( sysfsnode );
     }
 
-    public async int get_current_time() throws FreeSmartphone.Error, DBus.Error
+    public async int get_current_time() throws FreeSmartphone.Error, DBusError, IOError
     {
         return _getCurrentTime();
     }
 
-    public async void set_current_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBus.Error
+    public async void set_current_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBusError, IOError
     {
         openRtc();
         var t = GLib.Time.gm( (time_t) seconds_since_epoch ); // VALABUG: cast is necessary here, otherwise things go havoc
         logger.info( "Setting RTC time to %s (dst=%d)".printf( t.to_string(), t.isdst ) );
-        var res = Posix.ioctl( rtc_fd, Linux.Rtc.RTC_SET_TIME, &t );
+        var res = Linux.ioctl( rtc_fd, Linux.Rtc.RTC_SET_TIME, &t );
         closeRtc( res == -1 );
     }
 
-    public async int get_wakeup_time() throws FreeSmartphone.Error, DBus.Error
+    public async int get_wakeup_time() throws FreeSmartphone.Error, DBusError, IOError
     {
         openRtc();
         Linux.Rtc.WakeAlarm alarm = {};
-        var res = Posix.ioctl( rtc_fd, Linux.Rtc.RTC_WKALM_RD, &alarm );
+        var res = Linux.ioctl( rtc_fd, Linux.Rtc.RTC_WKALM_RD, &alarm );
         closeRtc( res == -1 );
         GLib.Time t = {};
         t.second = alarm.time.tm_sec;
@@ -166,7 +161,7 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
         return ( alarm.enabled == 1 ) ? (int) Linux.timegm( t ) : 0;
     }
 
-    public async void set_wakeup_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBus.Error
+    public async void set_wakeup_time( int seconds_since_epoch ) throws FreeSmartphone.Error, DBusError, IOError
     {
         var rtctime = _getCurrentTime();
         if ( seconds_since_epoch > 0 && rtctime >= seconds_since_epoch )
@@ -190,7 +185,7 @@ class Rtc : FreeSmartphone.Device.RealtimeClock, FsoFramework.AbstractObject
         alarm.pending = 0;
 
         openRtc();
-        var res = Posix.ioctl( rtc_fd, Linux.Rtc.RTC_WKALM_SET, &alarm );
+        var res = Linux.ioctl( rtc_fd, Linux.Rtc.RTC_WKALM_SET, &alarm );
         if ( res == -1 )
         {
             closeRtc( true );
@@ -265,3 +260,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

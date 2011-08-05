@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+/*
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,12 +32,15 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
     const string[] opValue = { "Add", "Del", "Change", "ChangeAll", "unknown:4", "unknown:5", "unknown:6" };
     const string[] typeValue = { "All", "WiFi", "Bluetooth", "UWB", "WiMax", "WWan", "unknown:6", "unknown:7" };
 
-    protected static uint counter;
-
     private uint id;
     private string type;
     private bool softoff;
     private bool hardoff;
+
+    /* not forking into background gives a reliable pid(and also prints to stderr/stdout). */
+    private const string[] bluetoothd = { "bluetoothd", "-n" };
+    private int bluetoothd_pid = 0;
+    private string bluetoothd_startup_handler;
 
     private FsoDevice.BasePowerControlResource resource;
 
@@ -49,6 +52,7 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
             case Linux.RfKillType.WLAN:
                 this.type = "WiFi"; break;
             case Linux.RfKillType.BLUETOOTH:
+                bluetoothd_startup_handler = config.stringValue( "fsodevice.kernel26_rfkill", "bluetoothd_startup_handler","fsodeviced" );
                 this.type = "Bluetooth"; break;
             case Linux.RfKillType.UWB:
                 this.type = "UWB"; break;
@@ -64,10 +68,7 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
         this.softoff = softoff;
         this.hardoff = hardoff;
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         "%s/%u".printf( FsoFramework.Device.PowerControlServicePath, counter++ ),
-                                         this );
+        subsystem.registerObjectForServiceWithPrefix<FreeSmartphone.Device.PowerControl>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.PowerControlServicePath, this );
 
 #if WANT_FSO_RESOURCE
         Idle.add( () => {
@@ -162,6 +163,28 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
         }
     }
 
+    protected void start_bluetoothd()
+    {
+        logger.info("bluetoothd starting...");
+        GLib.Process.spawn_async( GLib.Environment.get_variable( "PWD" ),
+                                  bluetoothd,
+                                  null,
+                                  GLib.SpawnFlags.SEARCH_PATH,
+                                  null,
+                                  out this.bluetoothd_pid );
+        logger.debug(@"bluetoothd pid: $(this.bluetoothd_pid)");
+    }
+
+    protected void stop_bluetoothd()
+    {
+        logger.info("bluetoothd stopping...");
+        if ( bluetoothd_pid != 0)
+        {
+            Posix.kill( (Posix.pid_t)bluetoothd_pid, Posix.SIGKILL );
+            logger.debug(@"killing bluetoothd with pid: $(this.bluetoothd_pid)");
+        }
+    }
+
     public void powerChangedTo( bool softoff, bool hardoff )
     {
         assert( logger.debug( @"Status changed from..." ) );
@@ -178,6 +201,13 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
 
     public void setPower( bool on )
     {
+
+        if ( (bluetoothd_startup_handler == "fsodeviced" ) && ( this.type == "Bluetooth" )
+             && ( on == false ) )
+        {
+            stop_bluetoothd();
+        }
+
         var event = Linux.RfKillEvent() {
             idx   = this.id,
             op    = Linux.RfKillOp.CHANGE,
@@ -188,17 +218,23 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
         {
             logger.error( @"Could not write rfkill event: $(strerror(errno))" );
         }
+
+        if ( ( bluetoothd_startup_handler == "fsodeviced" ) && ( this.type == "Bluetooth" )
+             && ( on == true ) )
+        {
+            start_bluetoothd();
+        }
     }
 
     //
     // DBUS API (org.freesmartphone.Device.PowerControl)
     //
-    public async bool get_power() throws DBus.Error
+    public async bool get_power() throws DBusError, IOError
     {
         return getPower();
     }
 
-    public async void set_power( bool on ) throws DBus.Error
+    public async void set_power( bool on ) throws DBusError, IOError
     {
         setPower( on );
     }
@@ -259,3 +295,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

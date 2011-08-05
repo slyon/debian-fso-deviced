@@ -6,6 +6,7 @@ INCLUDES = \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
 	-include $(CONFIG_HEADER) \
+	-DG_LOG_DOMAIN=\"fsodeviced\" \
 	$(NULL)
 
 BUILT_SOURCES = .vala.stamp
@@ -24,7 +25,6 @@ $(BUILT_SOURCES): $(fsodeviced_VALASOURCES)
 	$(VALAC) -C --vapidir vapi \
 				--pkg posix \
 				--pkg gio-2.0 \
-				--pkg dbus-glib-1 \
 				--pkg fsoframework-2.0 \
 				--save-temps \
 				--basedir $(top_srcdir) $^

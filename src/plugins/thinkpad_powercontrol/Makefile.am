@@ -6,7 +6,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.thinkpad_powercontrol\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -14,14 +14,12 @@ noinst_PROGRAMS = $(TEST_PROGS)
 progs_ldadd = \
 	$(FSO_LIBS) \
 	$(GLIB_LIBS) \
-	$(DBUS_LIBS) \
 	$(top_srcdir)/src/lib/libfsodevice.la
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0 \
 	--pkg fsodevice-2.0
@@ -43,6 +41,10 @@ $(thinkpad_powercontrol_la_SOURCES): $(thinkpad_powercontrol_la_VALASOURCES)
 thinkpad_powercontrol_la_LIBADD = $(progs_ldadd)
 thinkpad_powercontrol_la_LDFLAGS = -no-undefined -module -avoid-version
 thinkpad_powercontrol_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(thinkpad_powercontrol_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

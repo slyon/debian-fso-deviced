@@ -2,49 +2,57 @@ include $(top_srcdir)/Makefile.decl
 
 NULL =
 
-AM_CPPFLAGS = \
+AM_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.dummy_input\" \
 	$(NULL)
-
-noinst_PROGRAMS = $(TEST_PROGS)
 
 progs_ldadd = \
 	$(top_srcdir)/src/lib/libfsodevice.la \
 	$(FSO_LIBS) \
-	$(DBUS_LIBS) \
 	$(GLIB_LIBS) \
 	$(NULL)
 
 VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/src/lib \
-	--vapidir . \
+	--vapidir $(top_srcdir)/vapi \
 	--pkg glib-2.0 \
+	--pkg gio-2.0 \
 	--pkg gee-1.0 \
-	--pkg dbus-glib-1 \
+	--pkg linux \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0 \
 	--pkg fsodevice-2.0
+
+if WANT_DEBUG
+VALAC_ARGS += -g -D DEBUG
+AM_CFLAGS += -ggdb -O0
+endif
 
 #
 # plugin
 #
 modlibexecdir = $(libdir)/cornucopia/modules/fsodevice
-modlibexec_LTLIBRARIES = router_palmpre.la
-router_palmpre_la_SOURCES = plugin.c
-router_palmpre_la_VALASOURCES = plugin.vala
-$(router_palmpre_la_SOURCES): $(router_palmpre_la_VALASOURCES)
+modlibexec_LTLIBRARIES = dummy_input.la
+dummy_input_la_SOURCES = plugin.c
+dummy_input_la_VALASOURCES = plugin.vala
+$(dummy_input_la_SOURCES): $(dummy_input_la_VALASOURCES)
 	$(VALAC) -C $(VALAC_ARGS) $^
 	touch $@
-router_palmpre_la_LIBADD = $(progs_ldadd)
-router_palmpre_la_LDFLAGS = -no-undefined -module -avoid-version
-router_palmpre_la_LIBTOOLFLAGS = --tag=disable-static
+dummy_input_la_LIBADD = $(progs_ldadd)
+dummy_input_la_LDFLAGS = -no-undefined -module -avoid-version
+dummy_input_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(dummy_input_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
-    plugin.c \
+    *.c \
+    *.h \
     *.la \
     *.lo \
     $(NULL)

@@ -5,7 +5,7 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.kernel_info\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -16,7 +16,6 @@ VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg linux \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0
@@ -34,6 +33,10 @@ $(kernel_info_la_SOURCES): $(kernel_info_la_VALASOURCES)
 kernel_info_la_LIBADD = $(progs_ldadd)
 kernel_info_la_LDFLAGS = -no-undefined -module -avoid-version
 kernel_info_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(kernel_info_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

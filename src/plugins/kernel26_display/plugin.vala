@@ -1,5 +1,5 @@
 /*
- * (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  * (C) 2009 Sudharshan "Sup3rkiddo" S <sudharsh@gmail.com>
  *
  * This library is free software; you can redistribute it and/or
@@ -64,10 +64,8 @@ class Display : FreeSmartphone.Device.Display,
 
         debug( @"smoothup = $smoothup, smoothdown = $smoothdown" );
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                        "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter++ ),
-                        this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Display>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter ), this );
+        subsystem.registerObjectForService<FreeSmartphone.Info>( FsoFramework.Device.ServiceDBusName, "%s/%u".printf( FsoFramework.Device.DisplayServicePath, counter++ ), this );
 
         logger.info( @"Created w/ max brightness = $max_brightness, smooth up = $smoothup, smooth down = $smoothdown" );
     }
@@ -80,7 +78,10 @@ class Display : FreeSmartphone.Device.Display,
     private void _setBacklightPower( bool on )
     {
         if ( fb_fd != -1 )
-            Posix.ioctl( fb_fd, FBIOBLANK, on ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN );
+        {
+            Linux.ioctl( fb_fd, FBIOBLANK, on ? FB_BLANK_UNBLANK : FB_BLANK_POWERDOWN );
+        }
+        this.backlight_power( on ); // DBUS SIGNAL
     }
 
     private int _valueToPercent( int value )
@@ -112,6 +113,11 @@ class Display : FreeSmartphone.Device.Display,
 
     private async void _setBrightnessSoft( int brightness )
     {
+        if ( current_brightness == 0 ) // previously we were off
+        {
+            _setBacklightPower( true );
+        }
+
         smoothInProgress = true;
 
         double current = current_brightness;
@@ -121,7 +127,7 @@ class Display : FreeSmartphone.Device.Display,
         {
             double x = dt/DISPLAY_SMOOTH_PERIOD;
             double fx = ( interval > 0 ) ? x * x * x : (1-x) * (1-x) * (1-x);
-            double val = ( interval > 0 ) ? ( current + ( fx * interval ) ) : ( current + ( (1-fx) * interval ) ); // may want to shit 7+current...
+            double val = ( interval > 0 ) ? ( current + ( fx * interval ) ) : ( current + ( (1-fx) * interval ) ); // may want to shift 7+current...
 #if DEBUG
             message( "x = %.2f, fx = %.2f (val = %.2f)", x, fx, val );
 #endif
@@ -140,6 +146,10 @@ class Display : FreeSmartphone.Device.Display,
         current_brightness = brightness;
         assert( logger.debug( @"Brightness set to $brightness [soft]" ) );
 
+        if ( brightness == 0 ) // now we are off
+        {
+            _setBacklightPower( false );
+        }
         smoothInProgress = false;
     }
 
@@ -183,11 +193,11 @@ class Display : FreeSmartphone.Device.Display,
     //
     // FreeSmartphone.Info (DBUS API)
     //
-    public async HashTable<string, Value?> get_info()
+    public async HashTable<string,Variant> get_info() throws DBusError, IOError
     {
         string _leaf;
-        var val = Value( typeof(string) );
-        HashTable<string, Value?> info_table = new HashTable<string, Value?>( str_hash, str_equal );
+        Variant val;
+        HashTable<string,Variant> info_table = new HashTable<string,Variant>( str_hash, str_equal );
         /* Just read all the files in the sysfs path and return it as a{ss} */
         try
         {
@@ -196,7 +206,7 @@ class Display : FreeSmartphone.Device.Display,
             {
                 if( FileUtils.test (this.sysfsnode + "/" + _leaf, FileTest.IS_REGULAR) && _leaf != "uevent" )
                 {
-                    val.take_string( FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf ).strip());
+                    val = FsoFramework.FileHandling.read(this.sysfsnode + "/" + _leaf ).strip();
                     info_table.insert( _leaf, val );
                 }
             }
@@ -230,6 +240,7 @@ class Display : FreeSmartphone.Device.Display,
     {
         var value = power ? "0" : "1";
         FsoFramework.FileHandling.write( value, this.sysfsnode + "/bl_power" );
+        this.backlight_power( power ); // DBUS SIGNAL
     }
 }
 
@@ -266,3 +277,5 @@ public static void fso_register_function( TypeModule module )
 {
     FsoFramework.theLogger.debug( "fsodevice.kernel26_display fso_register_function()" );
 }
+
+// vim:ts=4:sw=4:expandtab

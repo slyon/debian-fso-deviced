@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -52,11 +52,7 @@ class OmapVibe : FreeSmartphone.Device.Vibrator, FsoFramework.AbstractObject
             return;
         }
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObjectWithPrefix(
-            FsoFramework.Device.ServiceDBusName,
-            FsoFramework.Device.VibratorServicePath,
-            this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Vibrator>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.VibratorServicePath, this );
         logger.info( "Created" );
     }
 
@@ -131,12 +127,12 @@ class OmapVibe : FreeSmartphone.Device.Vibrator, FsoFramework.AbstractObject
     //
     // FreeSmartphone.Device.Vibrator (DBUS API)
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return Path.get_basename( sysfsnode );
     }
 
-    public async void vibrate_pattern( int pulses, int delay_on, int delay_off, int strength ) throws FreeSmartphone.Error, DBus.Error
+    public async void vibrate_pattern( int pulses, int delay_on, int delay_off, int strength ) throws FreeSmartphone.Error, DBusError, IOError
     {
         if ( this.pulses > 0 || fulltimeoutwatch > 0 )
             throw new FreeSmartphone.Error.INVALID_PARAMETER( "Already vibrating... please try again" );
@@ -155,7 +151,7 @@ class OmapVibe : FreeSmartphone.Device.Vibrator, FsoFramework.AbstractObject
         onToggleTimeout();
     }
 
-    public async void vibrate( int milliseconds, int strength ) throws FreeSmartphone.Error, DBus.Error
+    public async void vibrate( int milliseconds, int strength ) throws FreeSmartphone.Error, DBusError, IOError
     {
 
         if ( this.pulses > 0 || fulltimeoutwatch > 0 )
@@ -172,7 +168,7 @@ class OmapVibe : FreeSmartphone.Device.Vibrator, FsoFramework.AbstractObject
         } );
     }
 
-    public async void stop() throws FreeSmartphone.Error, DBus.Error
+    public async void stop() throws FreeSmartphone.Error, DBusError, IOError
     {
         cleanTimeouts();
         set_vibration( 0 );
@@ -225,3 +221,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

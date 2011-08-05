@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -59,13 +59,14 @@ public class IdleStatus
 
     public void onState( FreeSmartphone.Device.IdleState status )
     {
-        instance.logger.debug( "onState transitioning from s%d to s%d".printf( this.status, status ) );
-
         if ( watch > 0 )
+        {
             Source.remove( watch );
+        }
 
         if ( this.status != status )
         {
+            assert( instance.logger.debug( @"onState transitioning from $(this.status) to $(status)" ) );
             this.status = status;
             instance.state( this.status ); // DBUS SIGNAL
         }
@@ -81,7 +82,7 @@ public class IdleStatus
         }
         else
         {
-            instance.logger.debug( "Timeout for s%d disabled, not falling into this state next.".printf( next ) );
+            assert( instance.logger.debug( @"Timeout for $(next) disabled, not falling into this state." ) );
         }
     }
 
@@ -110,6 +111,7 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
     private const int KEY_REPEAT = 2;
 
     private string[] states;
+    private Gee.HashMap<int,string> stateIgnoreById;
 
     private FreeSmartphone.Device.IdleState displayResourcePreventState;
 
@@ -122,17 +124,44 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
     {
         this.subsystem = subsystem;
         this.sysfsnode = sysfsnode;
+        idlestatus = new IdleStatus();
 
-        Idle.add( onIdle );
+        states = { "busy", "idle", "idle_dim", "idle_prelock", "lock", "suspend" };
+        stateIgnoreById = new Gee.HashMap<int,string>();
+
+        hookToExternalModules();
+
+        resetTimeouts();
+        syncNodesToWatch();
+        registerInputWatches();
+
+        FsoFramework.BaseKObjectNotifier.addMatch( "add", "input", onInputNotification );
+        FsoFramework.BaseKObjectNotifier.addMatch( "remove", "input", onInputNotification );
 
         // FIXME: Reconsider using /org/freesmartphone/Device/Input instead of .../IdleNotifier
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                        "%s/0".printf( FsoFramework.Device.IdleNotifierServicePath ),
-                                        this );
+        subsystem.registerObjectForService<FreeSmartphone.Device.IdleNotifier>( FsoFramework.Device.ServiceDBusName, "%s/0".printf( FsoFramework.Device.IdleNotifierServicePath ), this );
 
         var display_resource_allows_dim = config.boolValue( KERNEL_IDLE_PLUGIN_NAME, "display_resource_allows_dim", false );
         displayResourcePreventState = display_resource_allows_dim ? FreeSmartphone.Device.IdleState.IDLE_PRELOCK : FreeSmartphone.Device.IdleState.IDLE_DIM;
+
+        var n = 0;
+        foreach ( var state in states )
+        {
+            var to_ignore = config.stringValue( KERNEL_IDLE_PLUGIN_NAME, @"$(state):ignore_by_id", "" );
+            stateIgnoreById.set( n, to_ignore );
+
+            if ( to_ignore.length > 0 )
+            {
+                assert( logger.debug( @"Read ignore_by_id entry for state = $(state)" ) );
+            }
+
+            n++;
+        }
+
+        Idle.add( () => {
+            idlestatus.onState( FreeSmartphone.Device.IdleState.AWAKE );
+            return false;
+        } );
     }
 
     public override string repr()
@@ -140,7 +169,19 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         return @"<$sysfsnode>";
     }
 
-    private string _cleanBuffer( int length )
+    private void hookToExternalModules()
+    {
+        foreach ( var object in subsystem.allObjectsWithPrefix( "/org/freesmartphone/Device/Input/" ) )
+        {
+            if ( object is FsoDevice.SignallingInputDevice )
+            {
+                assert( logger.debug( "Found an auxilliary input object, connecting to signal" ) );
+                ((FsoDevice.SignallingInputDevice) object ).receivedEvent.connect( handleInputEvent );
+            }
+        }
+    }
+
+    private string cleanBuffer( int length )
     {
         // work around bug in dbus(-glib?) which crashes when marshalling \xae which is the (C) symbol
         for ( int i = 0; i < length; ++i )
@@ -151,14 +192,14 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         return (string)buffer;
     }
 
-    private bool _inquireAndCheckForIgnore( int fd )
+    private bool inquireAndCheckForIgnore( int fd )
     {
         var ignore = false;
 
-        var length = Posix.ioctl( fd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
+        var length = Linux.ioctl( fd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
         if ( length > 0 )
         {
-            var product = _cleanBuffer( length );
+            var product = cleanBuffer( length );
             foreach ( var i in ignoreById )
             {
                 if ( i in product )
@@ -167,10 +208,10 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
                 }
             }
         }
-        length = Posix.ioctl( fd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
+        length = Linux.ioctl( fd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
         if ( length > 0 )
         {
-            var phys = _cleanBuffer( length );
+            var phys = cleanBuffer( length );
             foreach ( var p in ignoreByPhys )
             {
                 if ( p in phys )
@@ -227,26 +268,10 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
 
     public void resetTimeouts()
     {
-        states = { "busy", "idle", "idle_dim", "idle_prelock", "lock", "suspend" };
         for ( int i = 0; i < states.length; ++i )
         {
             idlestatus.timeouts[i] = config.intValue( KERNEL_IDLE_PLUGIN_NAME, states[i], idlestatus.timeouts[i] );
         }
-    }
-
-    public bool onIdle()
-    {
-        idlestatus = new IdleStatus();
-        idlestatus.onState( FreeSmartphone.Device.IdleState.AWAKE );
-
-        resetTimeouts();
-        syncNodesToWatch();
-        registerInputWatches();
-
-        FsoFramework.BaseKObjectNotifier.addMatch( "add", "input", onInputNotification );
-        FsoFramework.BaseKObjectNotifier.addMatch( "remove", "input", onInputNotification );
-
-        return false;
     }
 
     public void onInputNotification( HashTable<string,string> properties )
@@ -266,12 +291,23 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         if ( fds != null )
         {
             foreach ( var fd in fds )
+            {
                 Posix.close( fd );
+            }
         }
 
         fds = new int[] {};
+        Dir dir;
         // scan sysfs path
-        var dir = Dir.open( sysfsnode );
+        try
+        {
+            dir = Dir.open( sysfsnode );
+        }
+        catch ( GLib.Error e )
+        {
+            logger.error( @"Can't open $sysfsnode ($(e.message)); idle notifier will not work" );
+            return;
+        }
         var entry = dir.read_name();
         while ( entry != null )
         {
@@ -283,13 +319,15 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
                 {
                     logger.warning( @"Could not open $entry: $(strerror(errno)) (ignoring)" );
                 }
-                else if ( _inquireAndCheckForIgnore( fd ) )
+                else if ( inquireAndCheckForIgnore( fd ) )
                 {
                     logger.info( @"Skipping $entry as instructed by configuration" );
                     Posix.close( fd );
                 }
                 else
+                {
                     fds += fd;
+                }
             }
             entry = dir.read_name();
         }
@@ -309,7 +347,48 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         }
     }
 
-    private void _handleInputEvent( ref Linux.Input.Event ev )
+    /**
+     * In some cases we have to check for an input device id to ignore only in one idle
+     * state. So we ask here about the device id where the event comes from and then check
+     * if we have to ignore it in the current idle state.
+     **/
+    private bool checkForIgnoreInputEvent( int sourceFd )
+    {
+        bool ignore = false;
+        string ids = stateIgnoreById[ idlestatus.status ];
+        if ( ids == null )
+        {
+            return false;
+        }
+        
+        string[] idsToIgnore = ids.split( ";" );
+
+        if ( idsToIgnore.length == 0 )
+        {
+            return false;
+        }
+
+        var length = Linux.ioctl( sourceFd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
+        if ( length > 0 )
+        {
+            var product = cleanBuffer( length );
+            ignore = product in idsToIgnore;
+        }
+
+        if ( !ignore )
+        {
+            length = Linux.ioctl( sourceFd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
+            if ( length > 0 )
+            {
+                var phys = cleanBuffer( length );
+                ignore = phys in idsToIgnore;
+            }
+        }
+
+        return ignore;
+    }
+
+    private void handleInputEvent( ref Linux.Input.Event ev )
     {
         idlestatus.onState( FreeSmartphone.Device.IdleState.BUSY );
     }
@@ -325,9 +404,13 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         }
 
 #if DEBUG
-        logger.debug( @"Input event (fd$(source.unix_get_fd())): $(ev.type), $(ev.code), $(ev.value)" );
+        assert( logger.debug( @"Input event (fd$(source.unix_get_fd())): $(ev.type), $(ev.code), $(ev.value)" ) );
 #endif
-        _handleInputEvent( ref ev );
+
+        if ( !checkForIgnoreInputEvent( source.unix_get_fd() ) )
+        {
+            handleInputEvent( ref ev );
+        }
 
         return true;
     }
@@ -335,12 +418,12 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
     //
     // FreeSnmartphone.Device.IdleNotifier (DBUS API)
     //
-    public async FreeSmartphone.Device.IdleState get_state() throws DBus.Error
+    public async FreeSmartphone.Device.IdleState get_state() throws DBusError, IOError
     {
         return 0;
     }
 
-    public async GLib.HashTable<string,int> get_timeouts() throws DBus.Error
+    public async GLib.HashTable<string,int> get_timeouts() throws DBusError, IOError
     {
         var dict = new GLib.HashTable<string,int>( str_hash, str_equal );
 
@@ -351,13 +434,14 @@ class IdleNotifier : FreeSmartphone.Device.IdleNotifier, FsoFramework.AbstractOb
         return dict;
     }
 
-    public async void set_state( FreeSmartphone.Device.IdleState status ) throws DBus.Error
+    public async void set_state( FreeSmartphone.Device.IdleState status ) throws DBusError, IOError
     {
         idlestatus.onState( status );
     }
 
-    public async void set_timeout( FreeSmartphone.Device.IdleState status, int timeout ) throws DBus.Error
+    public async void set_timeout( FreeSmartphone.Device.IdleState status, int timeout ) throws DBusError, IOError
     {
+        config.write( KERNEL_IDLE_PLUGIN_NAME, states[status], timeout );
         idlestatus.timeouts[status] = timeout;
     }
 
@@ -497,3 +581,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

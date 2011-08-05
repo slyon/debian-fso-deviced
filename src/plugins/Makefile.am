@@ -5,7 +5,7 @@ NULL =
 AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
-	ambientlight_palmpre \
+	ambientlight_n900 \
 	\
 	accelerometer \
 	accelerometer_kxsd9 \
@@ -14,11 +14,11 @@ SUBDIRS = \
 	audio \
 	router_alsa \
 	router_qdsp5 \
-    router_palmpre \
 	player_alsa \
 	\
 	backlight_omappanel \
 	\
+	kernel26_cpufreq \
 	kernel26_display \
 	kernel26_firmwareloader \
 	kernel26_leds \
@@ -29,15 +29,25 @@ SUBDIRS = \
 	kernel_info \
 	kernel_input \
 	\
+	n900_powercontrol \
 	openmoko_powercontrol \
 	thinkpad_powercontrol \
+	\
+	powercontrol_ifconfig \
+	\
+	powersupply_n900 \
 	\
 	vibrator_ledclass \
 	vibrator_omapvibe \
 	vibrator_timedoutputclass \
-    \
-    palmpre_powersupply \
-    proximity_palmpre \
+	\
+	palmpre_quirks \
+	\
+	proximity_palmpre \
+	proximity_n900 \
+	\
+	gpio_input \
+	dummy_input \
 	\
 	$(NULL)
 
@@ -52,3 +62,4 @@ endif
 if WANT_RFKILL
 SUBDIRS += kernel26_rfkill
 endif
+

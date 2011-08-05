@@ -5,7 +5,7 @@ NULL =
 AM_CPPFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
-	$(DBUS_CFLAGS) \
+	-DG_LOG_DOMAIN=\"fsodevice.vibrator_omapvibe\" \
 	$(NULL)
 
 noinst_PROGRAMS = $(TEST_PROGS)
@@ -16,7 +16,6 @@ VALAC_ARGS = \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--pkg glib-2.0 \
-	--pkg dbus-glib-1 \
 	--pkg fso-glib-1.0 \
 	--pkg fsoframework-2.0
 
@@ -33,6 +32,10 @@ $(vibrator_omapvibe_la_SOURCES): $(vibrator_omapvibe_la_VALASOURCES)
 vibrator_omapvibe_la_LIBADD = $(progs_ldadd)
 vibrator_omapvibe_la_LDFLAGS = -no-undefined -module -avoid-version
 vibrator_omapvibe_la_LIBTOOLFLAGS = --tag=disable-static
+
+EXTRA_DIST += \
+	$(vibrator_omapvibe_la_VALASOURCES) \
+	$(NULL)
 
 CLEANFILES = \
     *.c \

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2010 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,7 +39,6 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
     FsoFramework.Subsystem subsystem;
 
     private string sysfsnode;
-    private static uint counter;
     private static uint typelength;
 
     // internal, so it can be accessable from aggregate input device
@@ -69,10 +68,7 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
 
         if ( !_inquireAndCheckForIgnore() )
         {
-            subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-            subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                             "%s/%u".printf( FsoFramework.Device.InputServicePath, counter++ ),
-                                                     this );
+            subsystem.registerObjectForServiceWithPrefix<FreeSmartphone.Device.Input>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.InputServicePath, this );
             logger.info( @"Created new InputDevice object: $product @ $phys w/ $caps" );
         }
     }
@@ -105,7 +101,7 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
         }
         else
         {
-            var length = Posix.ioctl( fd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
+            var length = Linux.ioctl( fd, Linux.Input.EVIOCGNAME( BUFFER_SIZE ), buffer );
             if ( length > 0 )
             {
                 product = _cleanBuffer( length );
@@ -117,7 +113,7 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
                     }
                 }
             }
-            length = Posix.ioctl( fd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
+            length = Linux.ioctl( fd, Linux.Input.EVIOCGPHYS( BUFFER_SIZE ), buffer );
             if ( length > 0 )
             {
                 phys = _cleanBuffer( length );
@@ -130,7 +126,7 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
                 }
             }
             ushort b = 0;
-            if ( Posix.ioctl( fd, Linux.Input.EVIOCGBIT( 0, Linux.Input.EV_MAX ), &b ) < 0 )
+            if ( Linux.ioctl( fd, Linux.Input.EVIOCGBIT( 0, Linux.Input.EV_MAX ), &b ) < 0 )
             {
                 logger.error( @"Can't inquire input device capabilities: $(strerror(errno))" );
             }
@@ -164,7 +160,7 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
             }
             caps = caps.strip();
 
-            if ( Posix.ioctl( fd, Linux.Input.EVIOCGKEY( typelength ), keystate ) < 0 )
+            if ( Linux.ioctl( fd, Linux.Input.EVIOCGKEY( typelength ), keystate ) < 0 )
             {
                 logger.error( @"Can't inquire input device key status: $(strerror(errno))" );
             }
@@ -187,22 +183,22 @@ class InputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractObject
     //
     // FsoFramework.Device.Input (DBUS)
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return name;
     }
 
-    public async string get_id() throws DBus.Error
+    public async string get_id() throws DBusError, IOError
     {
         return product;
     }
 
-    public async string get_phys() throws DBus.Error
+    public async string get_phys() throws DBusError, IOError
     {
         return phys;
     }
 
-    public async string get_capabilities() throws DBus.Error
+    public async string get_capabilities() throws DBusError, IOError
     {
         return caps;
     }
@@ -339,20 +335,18 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
         this.sysfsnode = sysfsnode;
 
         _registerInputWatches();
+        _hookToExternalModules();
 
-        keys = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
-        switches = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
-        relatives = new HashMap<int,EventStatus>( direct_hash, direct_equal, direct_equal );
+        keys = new HashMap<int,EventStatus>();
+        switches = new HashMap<int,EventStatus>();
+        relatives = new HashMap<int,EventStatus>();
 
         _parseConfig();
 
-        subsystem.registerServiceName( FsoFramework.Device.ServiceDBusName );
-        subsystem.registerServiceObject( FsoFramework.Device.ServiceDBusName,
-                                         FsoFramework.Device.InputServicePath,
-                                         this );
-        logger.info( "Created" );
+        subsystem.registerObjectForService<FreeSmartphone.Device.Input>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.InputServicePath, this );
 
         Idle.add( onIdle );
+        logger.info( "Created" );
     }
 
     private void _registerInputWatches()
@@ -365,6 +359,18 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
                 var channel = new IOChannel.unix_new( input.fd );
                 channel.add_watch( IOCondition.IN, onInputEvent );
                 channels += channel;
+            }
+        }
+    }
+
+    private void _hookToExternalModules()
+    {
+        foreach ( var object in subsystem.allObjectsWithPrefix( "/org/freesmartphone/Device/Input/" ) )
+        {
+            if ( object is FsoDevice.SignallingInputDevice )
+            {
+                logger.debug( "Found an auxilliary input object, connecting to signal" );
+                ((FsoDevice.SignallingInputDevice) object ).receivedEvent.connect( _handleInputEvent );
             }
         }
     }
@@ -496,22 +502,22 @@ class AggregateInputDevice : FreeSmartphone.Device.Input, FsoFramework.AbstractO
     //
     // DBUS API
     //
-    public async string get_name() throws DBus.Error
+    public async string get_name() throws DBusError, IOError
     {
         return dev_input;
     }
 
-    public async string get_id() throws DBus.Error
+    public async string get_id() throws DBusError, IOError
     {
         return "aggregate";
     }
 
-    public async string get_phys() throws DBus.Error
+    public async string get_phys() throws DBusError, IOError
     {
         return "";
     }
 
-    public async string get_capabilities() throws DBus.Error
+    public async string get_capabilities() throws DBusError, IOError
     {
         return "none";
     }
@@ -581,3 +587,5 @@ public static void fso_register_function( TypeModule module )
     return (!ok);
 }
 */
+
+// vim:ts=4:sw=4:expandtab

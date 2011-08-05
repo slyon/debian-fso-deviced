@@ -1,4 +1,4 @@
-AC_INIT([fsodeviced], [0.9.4], [smartphones-userland@linuxtogo.org], [fsodeviced])
+AC_INIT([fsodeviced], [0.9.5], [smartphones-userland@linuxtogo.org], [fsodeviced])
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_HEADERS(config.h)
 AM_INIT_AUTOMAKE([dist-bzip2])
@@ -10,8 +10,10 @@ AC_GNU_SOURCE
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
+VALA_REQUIRED=0.12.1
 AC_PATH_PROG(VALAC, valac, valac)
 AC_SUBST(VALAC)
+m4_ifdef([AM_PROG_VALAC], [AM_PROG_VALAC([$VALA_REQUIRED])])
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
@@ -19,22 +21,16 @@ AC_SUBST(LDFLAGS)
 
 ##############################################################################
 # required versions
-VALA_REQUIRED=0.8.0.69
-GLIB_REQUIRED=2.18.0
+GLIB_REQUIRED=2.26.0
 GEE_REQUIRED=0.5.0
-DBUS_REQUIRED=1.2.1
-DBUS_GLIB_REQUIRED=0.76
-FSO_GLIB_REQUIRED=0.2.0
+FSO_GLIB_REQUIRED=2010.05.11.2
 FSO_FRAMEWORK_REQUIRED=0.2.4
+FSO_TRANSPORT_REQUIRED=0.9.7
 FSO_RESOURCE_REQUIRED=0.1.0
+FSO_SYSTEM_REQUIRED=0.1.0
 ALSA_REQUIRED=0.20
 CANBERRA_REQUIRED=0.17
 GSTREAMER_REQUIRED=0.10.20
-
-##############################################################################
-# vala
-PKG_CHECK_MODULES(VALA,
-  vala-1.0 >= $VALA_REQUIRED)
 
 ##############################################################################
 # glib and friends + gee
@@ -45,14 +41,6 @@ PKG_CHECK_MODULES(GLIB,
   gee-1.0 >= $GEE_REQUIRED)
 AC_SUBST(GLIB_CFLAGS)
 AC_SUBST(GLIB_LIBS)
-
-##############################################################################
-# dbus and dbus-glib
-PKG_CHECK_MODULES(DBUS,
-  dbus-1 >= $DBUS_REQUIRED
-  dbus-glib-1 >= $DBUS_GLIB_REQUIRED)
-AC_SUBST(DBUS_CFLAGS)
-AC_SUBST(DBUS_LIBS)
 
 ##############################################################################
 # dbus conf directory
@@ -77,7 +65,9 @@ AC_SUBST(DBUS_SERVICE_DIR)
 PKG_CHECK_MODULES(FSO,
   fso-glib-1.0 >= $FSO_GLIB_REQUIRED
   fsoresource-2.0 >= $FSO_RESOURCE_REQUIRED
-  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED)
+  fsotransport-2.0 >= $FSO_TRANSPORT_REQUIRED
+  fsoframework-2.0 >= $FSO_FRAMEWORK_REQUIRED
+  fsosystem-2.0 >= $FSO_SYSTEM_REQUIRED)
 AC_SUBST(FSO_CFLAGS)
 AC_SUBST(FSO_LIBS)
 
@@ -91,16 +81,18 @@ AC_SUBST(ALSA_LIBS)
 ##############################################################################
 # optional feature: fsoresource integration
 AC_ARG_ENABLE(resource_integration,
-  [  --disable-resource-integration      Disable FSO resource integration (default=enabled)],
-  fsoresource="no", fsoresource="yes")
+  AS_HELP_STRING([--disable-resource-integration],[Disable FSO resource integration (default=enabled)]),
+  [fsoresource=$enableval],
+  [fsoresource="yes"])
 
 AM_CONDITIONAL( [WANT_FSORESOURCE], [test x"$fsoresource" = x"yes"])
 
 ##############################################################################
 # optional feature: kernel26_rfkill
 AC_ARG_ENABLE(kernel26_rfkill,
-  [  --enable-kernel26-rfkill            Enable building the rfkill power control plugin (default=disabled)],
-  rfkill="yes", rfkill="no")
+  AS_HELP_STRING([--enable-kernel26-rfkill],[Enable building the rfkill power control plugin (default=disabled)]),
+  [rfkill=$enableval],
+  [rfkill="no"])
 
 if test x$rfkill = "xyes"; then
     # linux/rfkill.h
@@ -111,8 +103,9 @@ AM_CONDITIONAL( [WANT_RFKILL], [test x"$rfkill" = x"yes"])
 ##############################################################################
 # optional feature: player_canberra
 AC_ARG_ENABLE(player_canberra,
-  [  --enable-player-canberra            Enable building the libcanberra audio player plugin (default=disabled)],
-  canberra="yes", canberra="no")
+  AS_HELP_STRING([--enable-player-canberra], [Enable building the libcanberra audio player plugin (default=disabled)]),
+  [canberra=$enableval],
+  [canberra="no"])
 
 if test x$canberra = "xyes"; then
     # libcanberra
@@ -128,8 +121,9 @@ AM_CONDITIONAL( [WANT_CANBERRA], [test x"$canberra" = x"yes"])
 ##############################################################################
 # optional feature: player_gstreamer
 AC_ARG_ENABLE(player_gstreamer,
-  [  --enable-player-gstreamer           Enable building the gstreamer audio player plugin (default=disabled)],
-  gstreamer="yes", gstreamer="no")
+  AS_HELP_STRING([--enable-player-gstreamer],[Enable building the gstreamer audio player plugin (default=disabled)]),
+  [gstreamer=$enableval],
+  [gstreamer="no"])
 
 if test x$gstreamer = "xyes"; then
     # gstreamer
@@ -140,11 +134,21 @@ if test x$gstreamer = "xyes"; then
 fi
 AM_CONDITIONAL( [WANT_GSTREAMER], [test x"$gstreamer" = x"yes"])
 
+# No longer necessary, we ship our own copy of the header
+##############################################################################
+# i2c-tools
+#AC_CHECK_HEADER(linux/i2c-dev.h, ,
+#    [AC_MSG_ERROR([Could not find linux/i2c-dev.h...please install i2c-tools])])
+#AC_LINK_IFELSE([AC_LANG_PROGRAM([#include <linux/i2c-dev.h>
+#  void test() { int foo = i2c_smbus_read_byte_data( 0, 0 ); } ])],,
+#  [AC_MSG_ERROR([Could not find i2c functions in linux/i2c-dev.h...please install i2c-tools, libi2c-dev, etc.])])
+
 ##############################################################################
 # check for debugging
 AC_ARG_ENABLE(debug,
-  [  --enable-debug            Enable debug build (default=disabled)],
-  debug="yes", debug="no")
+  AS_HELP_STRING([--enable-debug],[Enable debug build (default=disabled)]),
+  [debug=$enableval],
+  [debug="no"])
 AM_CONDITIONAL( [WANT_DEBUG], [test x"$debug" = x"yes"])
 
 ##############################################################################
@@ -161,9 +165,15 @@ AC_CONFIG_FILES([
   conf/htc_qualcomm_dream/Makefile
   conf/htc_qualcomm_dream/alsa-default/Makefile
   conf/htc_qualcomm_msm/Makefile
+  conf/htcleo/Makefile
+  conf/motorola_ezx/Makefile
+  conf/nexusone/Makefile
+  conf/nokia_n900/Makefile
+  conf/nokia_n900/alsa-default/Makefile
   conf/openmoko_gta/Makefile
   conf/openmoko_gta/alsa-2.6.29/Makefile
   conf/openmoko_gta/alsa-2.6.31/Makefile
+  conf/openmoko_gta/alsa-2.6.34/Makefile
   conf/palm_pre/Makefile
   data/Makefile
   data/org.freesmartphone.odeviced.service
@@ -174,9 +184,12 @@ AC_CONFIG_FILES([
   src/plugins/accelerometer/Makefile
   src/plugins/accelerometer_kxsd9/Makefile
   src/plugins/accelerometer_lis302/Makefile
-  src/plugins/ambientlight_palmpre/Makefile
+  src/plugins/ambientlight_n900/Makefile
   src/plugins/audio/Makefile
   src/plugins/backlight_omappanel/Makefile
+  src/plugins/gpio_input/Makefile
+  src/plugins/dummy_input/Makefile
+  src/plugins/kernel26_cpufreq/Makefile
   src/plugins/kernel26_display/Makefile
   src/plugins/kernel26_firmwareloader/Makefile
   src/plugins/kernel26_leds/Makefile
@@ -186,15 +199,18 @@ AC_CONFIG_FILES([
   src/plugins/kernel_idle/Makefile
   src/plugins/kernel_info/Makefile
   src/plugins/kernel_input/Makefile
+  src/plugins/n900_powercontrol/Makefile
   src/plugins/openmoko_powercontrol/Makefile
-  src/plugins/palmpre_powersupply/Makefile
+  src/plugins/palmpre_quirks/Makefile
+  src/plugins/powercontrol_ifconfig/Makefile
   src/plugins/player_alsa/Makefile
   src/plugins/player_canberra/Makefile
   src/plugins/player_gstreamer/Makefile
+  src/plugins/powersupply_n900/Makefile
   src/plugins/proximity_palmpre/Makefile
+  src/plugins/proximity_n900/Makefile
   src/plugins/router_alsa/Makefile
   src/plugins/router_qdsp5/Makefile
-  src/plugins/router_palmpre/Makefile
   src/plugins/thinkpad_powercontrol/Makefile
   src/plugins/vibrator_ledclass/Makefile
   src/plugins/vibrator_omapvibe/Makefile
