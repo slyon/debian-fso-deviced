@@ -1,8 +1,13 @@
-fso-deviced (0+git20100501-1) pkg-fso; urgency=low
+fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
 
-  * Upload to unstable.
+  * New upstream snapshot
+  * fixed lintian warnings
+  * bump standards to 3.9.2
+  * added gps powercontrol
+  * split package
+  * add Rico Rommel <rico@bierrommel.de> to uploaders
 
- -- Heiko Stuebner <heiko@sntech.de>  Tue, 13 Jul 2010 20:28:12 +0200
+ -- Rico Rommel <rico@bierrommel.de>  Fri, 05 Aug 2011 21:15:56 +0200
 
 fso-deviced (0+git20100501-1~fso) pkg-fso; urgency=low
 

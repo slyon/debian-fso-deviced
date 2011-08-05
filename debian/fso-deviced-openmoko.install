@@ -1,0 +1,5 @@
+etc/freesmartphone/conf/openmoko_gta/*
+etc/freesmartphone/conf/GTA02
+etc/freesmartphone/conf/GTA01
+usr/lib/cornucopia/modules/fsodevice/openmoko_powercontrol.so
+

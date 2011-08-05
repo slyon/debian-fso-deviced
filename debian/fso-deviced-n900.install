@@ -1,0 +1,7 @@
+usr/lib/cornucopia/modules/fsodevice/ambientlight_n900.so
+usr/lib/cornucopia/modules/fsodevice/n900_powercontrol.so
+usr/lib/cornucopia/modules/fsodevice/proximity_n900.so
+etc/freesmartphone/conf/nokia_n900/*
+etc/freesmartphone/conf/NokiaRX-51board
+
+

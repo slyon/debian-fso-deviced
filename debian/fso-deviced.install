@@ -1,6 +1,12 @@
 etc/dbus-1/system.d/fsodeviced.conf
-etc/freesmartphone/conf/*/*
 usr/sbin/*
 usr/lib/libfsodevice.so.0*
-usr/lib/cornucopia/modules/fsodevice/*.so
 usr/share/dbus-1/system-services/org.freesmartphone.odeviced.service
+usr/lib/cornucopia/modules/fsodevice/dummy_input.so
+usr/lib/cornucopia/modules/fsodevice/gpio_input.so
+usr/lib/cornucopia/modules/fsodevice/audio.so
+usr/lib/cornucopia/modules/fsodevice/accelerometer.so
+usr/lib/cornucopia/modules/fsodevice/powercontrol_ifconfig.so
+usr/lib/cornucopia/modules/fsodevice/vibrator_ledclass.so
+usr/lib/cornucopia/modules/fsodevice/vibrator_timedoutputclass.so
+usr/lib/cornucopia/modules/fsodevice/kernel*.so

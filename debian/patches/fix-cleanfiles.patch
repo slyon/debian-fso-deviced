@@ -1,0 +1,24 @@
+--- a/src/lib/Makefile.am
++++ b/src/lib/Makefile.am
+@@ -79,5 +79,6 @@
+ MAINTAINERCLEANFILES = \
+ 	$(BUILT_SOURCES) \
+ 	$(libfsodevice_la_SOURCES) \
++	fsodevice.h \
+ 	Makefile.in
+ 
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -9,3 +9,5 @@
+ 	plugins \
+ 	bin \
+ 	$(NULL)
++
++MAINTAINERCLEANFILES = Makefile.in
+--- a/src/plugins/Makefile.am
++++ b/src/plugins/Makefile.am
+@@ -63,3 +63,4 @@
+ SUBDIRS += kernel26_rfkill
+ endif
+ 
++MAINTAINERCLEANFILES = Makefile.in
