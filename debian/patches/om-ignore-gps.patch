@@ -1,0 +1,7 @@
+--- a/conf/openmoko_gta/fsodeviced.conf
++++ b/conf/openmoko_gta/fsodeviced.conf
+@@ -66,3 +66,4 @@
+ ignore_wifi = true
+ ignore_bluetooth = true
+ ignore_usbhost = false
++ignore_gps = true

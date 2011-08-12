@@ -1,2 +1,4 @@
 powercontrol-gps.patch
 fix-cleanfiles.patch
+restore-INSTALL.patch
+om-ignore-gps.patch

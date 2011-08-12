@@ -23,9 +23,7 @@ Build-Depends: cdbs,
                libgstreamer0.10-dev,
                linux-libc-dev,
                quilt,
-               autoconf,
-               automake,
-               libtool
+               dh-autoreconf,
 Standards-Version: 3.9.2
 Homepage: http://freesmartphone.org/
 
