@@ -30,6 +30,7 @@ Homepage: http://freesmartphone.org/
 Package: fso-deviced
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
+Recommends: fso-deviced-platform
 Description: freesmartphone.org device daemon
  This daemon implements the freesmartphone.org Device API
  .
@@ -67,6 +68,7 @@ Description: freesmartphone.org device daemon (debug symbols)
 Package: fso-deviced-openmoko
 Architecture: armel
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-lis302  (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fsodeviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
  This Package install all modules and config files  needed for GTA02 and GTA01
 
@@ -85,6 +87,7 @@ Description: Accelerometer-lis302 module for fso-deviced
 Package: fso-deviced-n900
 Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fsodeviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Nokia 900
  This Package install all modules and config files needed for Nokia 900
 
@@ -109,12 +112,14 @@ Description: Canberra player module for fso-deviced
 Package: fso-deviced-thinkpad
 Architecture: i386 amd64
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Thinkpad
  This Package install all modules and config files needed for Thinkpad
  
 Package: fso-deviced-palmpre
 Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-kxsd9 (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fsodeviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
  This Package install all modules and config files needed for PalmPre devices
  
@@ -133,6 +138,7 @@ Description: qdsp5 router module for fso-deviced
 Package: fso-deviced-ezx
 Architecture: armel
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fsodeviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Motorola EZX-platform
  This Package install all modules and config files needed for 
  Motorola A1200 and A780
@@ -140,5 +146,6 @@ Description: fso-deviced config files and plugins for Motorola EZX-platform
 Package: fso-deviced-htc
 Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fsodeviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-qdsp5 (= ${binary:Version}), fso-deviced-accelerometer-lis302 (= ${binary:Version})
+Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
  This Package install all modules and config files  needed for HTC deviced
