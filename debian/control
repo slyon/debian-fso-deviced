@@ -42,14 +42,14 @@ Section: debug
 Depends: ${shlibs:Depends}, 
          ${misc:Depends},
          fso-deviced (= ${binary:Version}), 
-         fso-deviced-openmoko (= ${binary:Version}),
-         fso-deviced-n900 (= ${binary:Version}),
          fso-deviced-player-alsa (= ${binary:Version}),
          fso-deviced-player-gstreamer (= ${binary:Version}),
          fso-deviced-player-canberra (= ${binary:Version}),
-         fso-deviced-palmpre (= ${binary:Version}),
-         fso-deviced-ezx (= ${binary:Version}),
-         fso-deviced-htc (= ${binary:Version}),
+         fso-deviced-openmoko (= ${binary:Version}) [armel],
+         fso-deviced-n900 (= ${binary:Version}) [armel armhf],
+         fso-deviced-palmpre (= ${binary:Version}) [armel armhf],
+         fso-deviced-ezx (= ${binary:Version}) [armel],
+         fso-deviced-htc (= ${binary:Version}) [armel armhf]
 Description: freesmartphone.org device daemon (debug symbols)
  This daemon implements the freesmartphone.org Device API
  .
