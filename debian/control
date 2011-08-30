@@ -50,7 +50,6 @@ Depends: ${shlibs:Depends},
          fso-deviced-player-canberra (= ${binary:Version}),
          fso-deviced-thinkpad (= ${binary:Version}),
          fso-deviced-palmpre (= ${binary:Version}),
-         fso-deviced-router-qdsp5 (= ${binary:Version}),
          fso-deviced-ezx (= ${binary:Version}),
          fso-deviced-htc (= ${binary:Version}),
 Description: freesmartphone.org device daemon (debug symbols)
@@ -108,12 +107,6 @@ Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
  This Package install all modules and config files needed for PalmPre devices
  
-Package: fso-deviced-router-qdsp5
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
-Description: qdsp5 router module for fso-deviced
- This Package contains the qdsp5 router module used by fso-deviced
-
 Package: fso-deviced-ezx
 Architecture: armel
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
@@ -124,7 +117,7 @@ Description: fso-deviced config files and plugins for Motorola EZX-platform
 
 Package: fso-deviced-htc
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-qdsp5 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
  This Package install all modules and config files  needed for HTC deviced
