@@ -44,7 +44,6 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          fso-deviced (= ${binary:Version}), 
          fso-deviced-openmoko (= ${binary:Version}),
-         fso-deviced-accelerometer-lis302 (= ${binary:Version}),
          fso-deviced-n900 (= ${binary:Version}),
          fso-deviced-player-alsa (= ${binary:Version}),
          fso-deviced-player-gstreamer (= ${binary:Version}),
@@ -65,16 +64,10 @@ Description: freesmartphone.org device daemon (debug symbols)
 
 Package: fso-deviced-openmoko
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-lis302  (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fso-deviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fso-deviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
  This Package install all modules and config files  needed for GTA02 and GTA01
-
-Package: fso-deviced-accelerometer-lis302
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
-Description: Accelerometer-lis302 module for fso-deviced
- This Package contains the accelerometer-lis302 module used by fso-deviced
 
 Package: fso-deviced-n900
 Architecture: armel armhf
@@ -131,7 +124,7 @@ Description: fso-deviced config files and plugins for Motorola EZX-platform
 
 Package: fso-deviced-htc
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-qdsp5 (= ${binary:Version}), fso-deviced-accelerometer-lis302 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-qdsp5 (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
  This Package install all modules and config files  needed for HTC deviced

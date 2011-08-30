@@ -4,4 +4,4 @@ etc/freesmartphone/conf/htcleo/*
 etc/freesmartphone/conf/diamond
 etc/freesmartphone/conf/raphael
 etc/freesmartphone/conf/trout
-
+usr/lib/cornucopia/modules/fsodevice/accelerometer_lis302.so
