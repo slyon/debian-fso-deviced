@@ -2,6 +2,7 @@ usr/lib/cornucopia/modules/fsodevice/palmpre_quirks.so
 usr/lib/cornucopia/modules/fsodevice/proximity_palmpre.so
 usr/lib/cornucopia/modules/fsodevice/vibrator_omapvibe.so
 usr/lib/cornucopia/modules/fsodevice/backlight_omappanel.so
+usr/lib/cornucopia/modules/fsodevice/accelerometer_kxsd9.so
 etc/freesmartphone/conf/palm_pre/*
 etc/freesmartphone/conf/SirloinOMAP3430board
 etc/freesmartphone/conf/SirloinOMAP3630board

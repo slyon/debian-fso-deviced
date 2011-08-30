@@ -44,7 +44,6 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          fso-deviced (= ${binary:Version}), 
          fso-deviced-openmoko (= ${binary:Version}),
-         fso-deviced-accelerometer-kxsd9 (= ${binary:Version}),
          fso-deviced-accelerometer-lis302 (= ${binary:Version}),
          fso-deviced-n900 (= ${binary:Version}),
          fso-deviced-player-alsa (= ${binary:Version}),
@@ -70,12 +69,6 @@ Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), 
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
  This Package install all modules and config files  needed for GTA02 and GTA01
-
-Package: fso-deviced-accelerometer-kxsd9
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
-Description: Accelerometer-kxsd9 module for fso-deviced
- This Package contains the accelerometer kxsd9 module used by fso-deviced
 
 Package: fso-deviced-accelerometer-lis302
 Architecture: any
@@ -117,7 +110,7 @@ Description: fso-deviced config files and plugins for Thinkpad
  
 Package: fso-deviced-palmpre
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-kxsd9 (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
  This Package install all modules and config files needed for PalmPre devices
