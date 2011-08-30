@@ -2,7 +2,7 @@ Source: fso-deviced
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Heiko Stuebner <heiko@sntech.de>, Sebastian Reichel <elektranox@gmail.com>, Rico Rommel <rico@bierrommel.de>
+Uploaders: Heiko Stuebner <heiko@sntech.de>, Sebastian Reichel <sre@debian.org>, Rico Rommel <rico@bierrommel.de>
 DM-Upload-Allowed: yes
 Build-Depends: cdbs,
                debhelper (>= 7),
