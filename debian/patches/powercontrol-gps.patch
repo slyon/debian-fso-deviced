@@ -1,3 +1,8 @@
+Description: add support for GTA02 GPS device power control
+ Add support for the GPS of the Openmoko GTA02 (alsa known
+ as Freerunner).
+Applied-Upstream: http://git.freesmartphone.org/?p=cornucopia.git;a=commit;h=12b5e795318ed5f98d272ee9386bea7471c6a870
+Author: Rico Rommel <rico@bierrommel.de>
 --- a/src/plugins/openmoko_powercontrol/plugin.vala
 +++ b/src/plugins/openmoko_powercontrol/plugin.vala
 @@ -24,16 +24,16 @@

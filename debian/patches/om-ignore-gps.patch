@@ -1,3 +1,6 @@
+Description: ignore Freerunner's GPS by default
+ ignore the GPS device of Openmoko GTA01/GTA02
+Author: Rico Rommel <rico@bierrommel.de>
 --- a/conf/openmoko_gta/fsodeviced.conf
 +++ b/conf/openmoko_gta/fsodeviced.conf
 @@ -66,3 +66,4 @@
