@@ -4,5 +4,5 @@ etc/freesmartphone/conf/htcleo/*
 etc/freesmartphone/conf/diamond
 etc/freesmartphone/conf/raphael
 etc/freesmartphone/conf/trout
-usr/lib/cornucopia/modules/fsodevice/accelerometer_lis302.so
-usr/lib/cornucopia/modules/fsodevice/router_qdsp5.so
+usr/lib/*/cornucopia/modules/fsodevice/accelerometer_lis302.so
+usr/lib/*/cornucopia/modules/fsodevice/router_qdsp5.so

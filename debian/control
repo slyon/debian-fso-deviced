@@ -28,6 +28,7 @@ Homepage: http://freesmartphone.org/
 
 Package: fso-deviced
 Architecture: linux-any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
 Recommends: fso-deviced-platform
 Description: freesmartphone.org device daemon
@@ -39,6 +40,7 @@ Description: freesmartphone.org device daemon
 Package: fso-deviced-dbg
 Architecture: linux-any
 Section: debug
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, 
          ${misc:Depends},
          fso-deviced (= ${binary:Version}), 
@@ -61,6 +63,7 @@ Description: freesmartphone.org device daemon (debug symbols)
 
 Package: fso-deviced-player-alsa
 Architecture: linux-any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Provides: fso-deviced-player
 Description: Alsa player module for fso-deviced
@@ -68,6 +71,7 @@ Description: Alsa player module for fso-deviced
 
 Package: fso-deviced-player-gstreamer
 Architecture: linux-any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), gstreamer0.10-alsa
 Provides: fso-deviced-player
 Description: Gstreamer player module for fso-deviced
@@ -75,6 +79,7 @@ Description: Gstreamer player module for fso-deviced
 
 Package: fso-deviced-player-canberra
 Architecture: linux-any
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Provides: fso-deviced-player
 Description: Canberra player module for fso-deviced
@@ -82,6 +87,7 @@ Description: Canberra player module for fso-deviced
 
 Package: fso-deviced-openmoko
 Architecture: armel
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
@@ -89,6 +95,7 @@ Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
 
 Package: fso-deviced-n900
 Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Nokia 900
@@ -96,6 +103,7 @@ Description: fso-deviced config files and plugins for Nokia 900
 
 Package: fso-deviced-palmpre
 Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
@@ -103,6 +111,7 @@ Description: fso-deviced config files and plugins for PalmPre deviced
 
 Package: fso-deviced-ezx
 Architecture: armel
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Motorola EZX-platform
@@ -111,6 +120,7 @@ Description: fso-deviced config files and plugins for Motorola EZX-platform
 
 Package: fso-deviced-htc
 Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
