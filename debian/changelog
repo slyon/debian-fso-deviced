@@ -10,8 +10,9 @@ fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
 
   [ Sebastian Reichel ]
   * switch from cdbs to debhelper
+  * update debian/copyright, use DEP5 
 
- -- Sebastian Reichel <sre@debian.org>  Wed, 31 Aug 2011 00:08:48 +0200
+ -- Sebastian Reichel <sre@debian.org>  Wed, 31 Aug 2011 01:03:30 +0200
 
 fso-deviced (0+git20100501-1~fso) pkg-fso; urgency=low
 
