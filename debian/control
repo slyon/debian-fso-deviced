@@ -28,7 +28,7 @@ Standards-Version: 3.9.2
 Homepage: http://freesmartphone.org/
 
 Package: fso-deviced
-Architecture: any
+Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
 Recommends: fso-deviced-platform
 Description: freesmartphone.org device daemon
@@ -38,7 +38,7 @@ Description: freesmartphone.org device daemon
  and is targeted for smartphones.
 
 Package: fso-deviced-dbg
-Architecture: any
+Architecture: linux-any
 Section: debug
 Depends: ${shlibs:Depends}, 
          ${misc:Depends},
@@ -61,21 +61,21 @@ Description: freesmartphone.org device daemon (debug symbols)
  package.
 
 Package: fso-deviced-player-alsa
-Architecture: any
+Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Provides: fso-deviced-player
 Description: Alsa player module for fso-deviced
  This Package contains the Alsa player module used by fso-deviced
 
 Package: fso-deviced-player-gstreamer
-Architecture: any
+Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), gstreamer0.10-alsa
 Provides: fso-deviced-player
 Description: Gstreamer player module for fso-deviced
  This Package contains the gstreamer player module used by fso-deviced
 
 Package: fso-deviced-player-canberra
-Architecture: any
+Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Provides: fso-deviced-player
 Description: Canberra player module for fso-deviced
