@@ -52,7 +52,6 @@ Depends: ${shlibs:Depends},
          fso-deviced-player-canberra (= ${binary:Version}),
          fso-deviced-thinkpad (= ${binary:Version}),
          fso-deviced-palmpre (= ${binary:Version}),
-         fso-deviced-router-alsa (= ${binary:Version}),
          fso-deviced-router-qdsp5 (= ${binary:Version}),
          fso-deviced-ezx (= ${binary:Version}),
          fso-deviced-htc (= ${binary:Version}),
@@ -67,7 +66,7 @@ Description: freesmartphone.org device daemon (debug symbols)
 
 Package: fso-deviced-openmoko
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-lis302  (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fso-deviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-lis302  (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fso-deviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
  This Package install all modules and config files  needed for GTA02 and GTA01
@@ -86,26 +85,26 @@ Description: Accelerometer-lis302 module for fso-deviced
 
 Package: fso-deviced-n900
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Nokia 900
  This Package install all modules and config files needed for Nokia 900
 
 Package: fso-deviced-player-alsa
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version}) | fso-deviced-router-qdsp5 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Description: Alsa player module for fso-deviced
  This Package contains the Alsa player module used by fso-deviced
 
 Package: fso-deviced-player-gstreamer
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version}) | fso-deviced-router-qdsp5 (= ${binary:Version}), gstreamer0.10-alsa
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), gstreamer0.10-alsa
 Description: Gstreamer player module for fso-deviced
  This Package contains the gstreamer player module used by fso-deviced
 
 Package: fso-deviced-player-canberra
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version}) | fso-deviced-router-qdsp5 (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
 Description: Canberra player module for fso-deviced
  This Package contains the canberra player module used by fso-deviced
  
@@ -118,17 +117,11 @@ Description: fso-deviced config files and plugins for Thinkpad
  
 Package: fso-deviced-palmpre
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-kxsd9 (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-accelerometer-kxsd9 (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
  This Package install all modules and config files needed for PalmPre devices
  
-Package: fso-deviced-router-alsa
-Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
-Description: Alsa router module for fso-deviced
- This Package contains the Alsa router module used by fso-deviced
-
 Package: fso-deviced-router-qdsp5
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
@@ -137,7 +130,7 @@ Description: qdsp5 router module for fso-deviced
 
 Package: fso-deviced-ezx
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version}), fso-deviced-router-alsa (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Motorola EZX-platform
  This Package install all modules and config files needed for 

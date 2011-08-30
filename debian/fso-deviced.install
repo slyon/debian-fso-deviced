@@ -10,3 +10,4 @@ usr/lib/cornucopia/modules/fsodevice/powercontrol_ifconfig.so
 usr/lib/cornucopia/modules/fsodevice/vibrator_ledclass.so
 usr/lib/cornucopia/modules/fsodevice/vibrator_timedoutputclass.so
 usr/lib/cornucopia/modules/fsodevice/kernel*.so
+usr/lib/cornucopia/modules/fsodevice/router_alsa.so
