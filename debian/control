@@ -67,7 +67,7 @@ Depends: ${misc:Depends},
          gstreamer0.10-alsa
 Provides: fso-deviced-player
 Description: Gstreamer player module for fso-deviced
- This Package contains the gstreamer player module used by fso-deviced
+ This Package contains the GStreamer player module used by fso-deviced
 
 Package: fso-deviced-player-canberra
 Architecture: linux-any
