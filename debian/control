@@ -80,10 +80,10 @@ Description: Canberra player module for fso-deviced
 
 Package: fso-deviced-openmoko
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer  (= ${binary:Version}) | fso-deviced-player-alsa  (= ${binary:Version}) | fso-deviced-player-canberra  (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
- This Package install all modules and config files  needed for GTA02 and GTA01
+ This Package install all modules and config files needed for GTA02 and GTA01
 
 Package: fso-deviced-n900
 Architecture: armel armhf
@@ -112,4 +112,4 @@ Architecture: armel armhf
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
- This Package install all modules and config files  needed for HTC deviced
+ This Package install all modules and config files needed for HTC deviced
