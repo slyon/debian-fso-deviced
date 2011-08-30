@@ -63,45 +63,48 @@ Description: freesmartphone.org device daemon (debug symbols)
 Package: fso-deviced-player-alsa
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
+Provides: fso-deviced-player
 Description: Alsa player module for fso-deviced
  This Package contains the Alsa player module used by fso-deviced
 
 Package: fso-deviced-player-gstreamer
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), gstreamer0.10-alsa
+Provides: fso-deviced-player
 Description: Gstreamer player module for fso-deviced
  This Package contains the gstreamer player module used by fso-deviced
 
 Package: fso-deviced-player-canberra
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version})
+Provides: fso-deviced-player
 Description: Canberra player module for fso-deviced
  This Package contains the canberra player module used by fso-deviced
 
 Package: fso-deviced-openmoko
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
  This Package install all modules and config files needed for GTA02 and GTA01
 
 Package: fso-deviced-n900
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Nokia 900
  This Package install all modules and config files needed for Nokia 900
 
 Package: fso-deviced-palmpre
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
  This Package install all modules and config files needed for PalmPre devices
 
 Package: fso-deviced-ezx
 Architecture: armel
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Motorola EZX-platform
  This Package install all modules and config files needed for 
@@ -109,7 +112,7 @@ Description: fso-deviced config files and plugins for Motorola EZX-platform
 
 Package: fso-deviced-htc
 Architecture: armel armhf
-Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-gstreamer (= ${binary:Version}) | fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player-canberra (= ${binary:Version})
+Depends: ${shlibs:Depends}, ${misc:Depends}, fso-deviced (= ${binary:Version}), fso-deviced-player-alsa (= ${binary:Version}) | fso-deviced-player (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
  This Package install all modules and config files needed for HTC deviced
