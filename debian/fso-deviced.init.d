@@ -1,10 +1,4 @@
 #!/bin/sh
-#
-# Example init.d script with LSB support.
-#
-# Please read this init.d carefully and modify the sections to
-# adjust it to the program you want to run.
-#
 # Copyright (c) 2007 Javier Fernandez-Sanguino <jfs@debian.org>
 #
 # This is free software; you may redistribute it and/or modify
@@ -38,10 +32,9 @@
 
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 
-DAEMON=/usr/sbin/fsodeviced # Introduce the server's location here
-NAME=fso-deviced             # Introduce the short server's name here
-DESC="freesmartphone.org device daemon"             # Introduce a short description here
-LOGDIR=/var/log  # Log directory to use
+DAEMON=/usr/sbin/fsodeviced
+NAME=fso-deviced
+DESC="freesmartphone.org device daemon"
 
 PIDFILE=/var/run/$NAME.pid
 
@@ -67,7 +60,6 @@ STARTTIME=2             # Time to wait for the server to start, in seconds
                         # be a false positive (says it did not start
                         # when it actually did)
 
-LOGFILE=$LOGDIR/$NAME.log  # Server logfile
 #DAEMONUSER=#PACKAGE#   # Users to run the daemons as. If this value
                         # is set start-stop-daemon will chuid the server
 
