@@ -30,7 +30,13 @@ Pre-Depends: ${misc:Pre-Depends}
 Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
 Recommends: fso-deviced-platform
 Description: freesmartphone.org device daemon
- This daemon implements the freesmartphone.org Device API
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
  .
  This package is part of the freesmartphone.org software stack
  and is targeted for smartphones.
@@ -50,13 +56,15 @@ Depends: ${shlibs:Depends},
          fso-deviced-ezx (= ${binary:Version}) [armel],
          fso-deviced-htc (= ${binary:Version}) [armel armhf]
 Description: freesmartphone.org device daemon (debug symbols)
- This daemon implements the freesmartphone.org Device API
+ fsodeviced implements the freesmartphone.org Device API.
  .
- This package is part of the freesmartphone.org software stack
- and is targeted for smartphones.
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
  .
- This package provides the debug symbols for the fso-deviced
- package.
+ This package provides the debug symbols for the fso-deviced package.
 
 Package: fso-deviced-player-gstreamer
 Architecture: linux-any
@@ -67,7 +75,15 @@ Depends: ${misc:Depends},
          gstreamer0.10-alsa
 Provides: fso-deviced-player
 Description: Gstreamer player module for fso-deviced
- This Package contains the GStreamer player module used by fso-deviced
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains the GStreamer player module used by fso-deviced.
 
 Package: fso-deviced-player-canberra
 Architecture: linux-any
@@ -77,7 +93,15 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-player
 Description: Canberra player module for fso-deviced
- This Package contains the canberra player module used by fso-deviced
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains the canberra player module used by fso-deviced.
 
 Package: fso-deviced-openmoko
 Architecture: armel
@@ -87,7 +111,16 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for GTA02 Freerunner and GTA01
- This Package install all modules and config files needed for GTA02 and GTA01
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for Openmoko GTA01
+ and GTA02 (Freerunner).
 
 Package: fso-deviced-n900
 Architecture: armel armhf
@@ -97,7 +130,15 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Nokia 900
- This Package install all modules and config files needed for Nokia 900
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for the Nokia 900.
 
 Package: fso-deviced-palmpre
 Architecture: armel armhf
@@ -107,7 +148,15 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for PalmPre deviced
- This Package install all modules and config files needed for PalmPre devices
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for PalmPre devices.
 
 Package: fso-deviced-ezx
 Architecture: armel
@@ -117,8 +166,16 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for Motorola EZX-platform
- This Package install all modules and config files needed for 
- Motorola A1200 and A780
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for Motorola A1200
+ and A780.
 
 Package: fso-deviced-htc
 Architecture: armel armhf
@@ -128,4 +185,12 @@ Depends: ${misc:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
 Description: fso-deviced config files and plugins for HTC devices
- This Package install all modules and config files needed for HTC deviced
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for HTC devices.
