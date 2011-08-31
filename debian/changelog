@@ -9,11 +9,15 @@ fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
   * add Rico Rommel <rico@bierrommel.de> to uploaders
 
   [ Sebastian Reichel ]
+  * update my mail address
+  * update debian/copyright and use DEP5
+  * prepare for multi-arch
   * switch from cdbs to debhelper
-  * update debian/copyright, use DEP5
+  * remove libdbus* build-dependencies (upstream switched to gdbus)
+  * first upload to Debian (Closes: #000000)
   * add manpage
 
- -- Sebastian Reichel <sre@debian.org>  Wed, 31 Aug 2011 22:49:47 +0200
+ -- Sebastian Reichel <sre@debian.org>  Wed, 31 Aug 2011 22:56:40 +0200
 
 fso-deviced (0+git20100501-1~fso) pkg-fso; urgency=low
 
