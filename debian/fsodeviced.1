@@ -1,0 +1,33 @@
+.TH FSODEVICED 1 "AUGUST 31, 2011"
+.\" Please adjust this date whenever revising the manpage.
+.SH NAME
+fsodeviced \- FSO device daemon
+.SH SYNOPSIS
+.B fsodeviced
+.SH DESCRIPTION
+fsodeviced implements the FSO Device DBus API. This API allows peripheral
+control, such as managing audio, backlight brightness, LEDs, Vibrator,
+Accelerometer, and power control for devices without dedicated controlling
+daemon. It can deal with charging notification and RTC, forwarding button
+events and notifying about the system's idleness status.
+
+It also ensures proper high-level suspend and resume preparation for available
+resources. Although it might be tempting, preparing a GSM modem for suspend
+can't sanely be handled in kernelspace, since you need to send several AT
+commands to it in order to prevent bogus wakeups. Which commands exactly is
+very device and situation specific, hence should be handled by userspace.
+
+fsodeviced loads its configuration from
+/etc/freesmartphone/conf/<platform>/fsodeviced.conf (platform is detected
+via /proc/cpuinfo). If this file can't be found it will fallback to
+/etc/freesmartphone/conf/default/fsodeviced.conf instead.
+
+The daemon will be started automatically by DBus, once a request is send
+to it, but can also be started manually, e.g. via /etc/init.d/fso-deviced.
+.SH OPTIONS
+fsodeviced takes no parameters.
+.SH AUTHOR
+fsodeviced was written by the FSO Team <smartphones-userland@linuxtogo.org>.
+.PP
+This manual page was written by Sebastian Reichel <sre@debian.org>,
+for the Debian project (but may be used by others).
