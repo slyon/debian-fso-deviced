@@ -16,8 +16,9 @@ fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
   * remove libdbus* build-dependencies (upstream switched to gdbus)
   * first upload to Debian (Closes: #000000)
   * add manpage
+  * add VCS entries in debian/control 
 
- -- Sebastian Reichel <sre@debian.org>  Wed, 31 Aug 2011 22:56:40 +0200
+ -- Sebastian Reichel <sre@debian.org>  Fri, 02 Sep 2011 01:14:46 +0200
 
 fso-deviced (0+git20100501-1~fso) pkg-fso; urgency=low
 
