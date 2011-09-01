@@ -14,7 +14,7 @@ fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
   * prepare for multi-arch
   * switch from cdbs to debhelper
   * remove libdbus* build-dependencies (upstream switched to gdbus)
-  * first upload to Debian (Closes: #000000)
+  * first upload to Debian (Closes: #640076)
   * add manpage
   * add VCS entries in debian/control 
 
