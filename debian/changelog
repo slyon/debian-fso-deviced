@@ -1,3 +1,11 @@
+fso-deviced (0.9.5+git20110805-2) unstable; urgency=low
+
+  * adapt wifi sysfs path for linux 2.6.39,
+    Thanks to Niccolo Rigacci <niccolo@rigacci.org> (Closes: #647003)
+  * fix lintian warnings in copyright file
+
+ -- Rico Rommel <rico@bierrommel.de>  Sun, 30 Oct 2011 13:56:03 +0000
+
 fso-deviced (0.9.5+git20110805-1) unstable; urgency=low
 
   [ Rico Rommel ]

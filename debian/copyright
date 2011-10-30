@@ -1,6 +1,6 @@
-Format-Specification: http://anonscm.debian.org/viewvc/dep/web/deps/dep5.mdwn?revision=174
-Name: fso-deviced
-Maintainer: Heiko Stuebner <heiko@sntech.de>
+Format: http://anonscm.debian.org/viewvc/dep/web/deps/dep5.mdwn?revision=174
+Upstream-Name: fso-deviced
+Upstream-Contact: http://www.freesmartphone.org
 Source: http://git.freesmartphone.org/?p=cornucopia.git;a=tree;f=fsodeviced
 
 Files: *

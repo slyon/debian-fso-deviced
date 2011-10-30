@@ -1,0 +1,16 @@
+Author: Niccolo Rigacci <niccolo@rigacci.org>
+Description: on linux 2.6.39 sysfs node for s3c2440-sdi
+ changed to s3c-sdi
+--- a/src/plugins/openmoko_powercontrol/plugin.vala
++++ b/src/plugins/openmoko_powercontrol/plugin.vala
+@@ -181,6 +181,10 @@
+     if ( !ignore_wifi )
+     {
+         var wifi = Path.build_filename( drivers, "s3c2440-sdi" );
++          if ( !FsoFramework.FileHandling.isPresent( wifi ) )
++          {
++        	wifi = Path.build_filename( drivers, "s3c-sdi" );
++          }
+         if ( FsoFramework.FileHandling.isPresent( wifi ) )
+         {
+             var o = new Openmoko.WiFiPowerControl( subsystem, wifi );
