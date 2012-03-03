@@ -42,8 +42,9 @@ SUBDIRS = \
 	vibrator_timedoutputclass \
 	\
 	palmpre_quirks \
+	gta04_quirks \
+	herring_quirks \
 	\
-	proximity_palmpre \
 	proximity_n900 \
 	\
 	gpio_input \
