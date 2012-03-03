@@ -1,5 +1,5 @@
-/**
- * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+/*
+ * Copyright (C) 2011 Simon Busch <morphis@gravedo.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -17,12 +17,36 @@
  *
  */
 
-namespace FsoDevice {
+using GLib;
+using Alsa;
 
-class Dispatcher<T> : GLib.Object
+internal class Herring.AlsaStreamKeeper : FsoFramework.AbstractObject
 {
-}
+    private PcmDevice pcm;
+    private string cardname = "default";
 
+    //
+    // public API
+    //
+
+    public AlsaStreamKeeper()
+    {
+        var rc = PcmDevice.open( out pcm, cardname, PcmStream.PLAYBACK );
+        assert( pcm != null );
+    }
+
+    ~AlsaStreamKeeper()
+    {
+        if ( pcm != null )
+        {
+            pcm.close();
+        }
+    }
+
+    public override string repr()
+    {
+        return @"<>";
+    }
 }
 
 // vim:ts=4:sw=4:expandtab

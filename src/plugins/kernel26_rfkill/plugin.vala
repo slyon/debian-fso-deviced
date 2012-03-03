@@ -30,7 +30,7 @@ namespace Kernel26
 class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.PowerControl, FsoFramework.AbstractObject
 {
     const string[] opValue = { "Add", "Del", "Change", "ChangeAll", "unknown:4", "unknown:5", "unknown:6" };
-    const string[] typeValue = { "All", "WiFi", "Bluetooth", "UWB", "WiMax", "WWan", "unknown:6", "unknown:7" };
+    const string[] typeValue = { "All", "WiFi", "Bluetooth", "UWB", "WiMax", "WWan", "GPS", "FM" };
 
     private uint id;
     private string type;
@@ -38,37 +38,53 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
     private bool hardoff;
 
     /* not forking into background gives a reliable pid(and also prints to stderr/stdout). */
-    private const string[] bluetoothd = { "bluetoothd", "-n" };
+    private const string[] bluetoothd = { "/usr/sbin/bluetoothd", "-n" };
     private int bluetoothd_pid = 0;
     private string bluetoothd_startup_handler;
+    private string wifi_iface;
 
     private FsoDevice.BasePowerControlResource resource;
 
     private RfKillPowerControl( uint id, Linux.RfKillType type, bool softoff, bool hardoff )
     {
         this.id = id;
+
         switch ( type )
         {
             case Linux.RfKillType.WLAN:
-                this.type = "WiFi"; break;
+                this.wifi_iface = config.stringValue( "fsodevice.kernel26_rfkill", "wifi_interface", "wlan0" );
+                this.type = "WiFi";
+                break;
             case Linux.RfKillType.BLUETOOTH:
                 bluetoothd_startup_handler = config.stringValue( "fsodevice.kernel26_rfkill", "bluetoothd_startup_handler","fsodeviced" );
-                this.type = "Bluetooth"; break;
+                this.type = "Bluetooth";
+                break;
             case Linux.RfKillType.UWB:
-                this.type = "UWB"; break;
+                this.type = "UWB";
+                break;
             case Linux.RfKillType.WIMAX:
-                this.type = "WiMax"; break;
+                this.type = "WiMax";
+                break;
             case Linux.RfKillType.WWAN:
-                this.type = "WWan"; break;
+                this.type = "WWan";
+                break;
+            case 0x6:
+                this.type = "GPS";
+                break;
+            case 0x7:
+                this.type = "FM";
+                break;
             default:
                 logger.warning( "Unknown RfKillType %u - please report" );
                 this.type = "unknown:%u".printf( (uint)type );
                 break;
         }
+
         this.softoff = softoff;
         this.hardoff = hardoff;
 
-        subsystem.registerObjectForServiceWithPrefix<FreeSmartphone.Device.PowerControl>( FsoFramework.Device.ServiceDBusName, FsoFramework.Device.PowerControlServicePath, this );
+        subsystem.registerObjectForServiceWithPrefix<FreeSmartphone.Device.PowerControl>( FsoFramework.Device.ServiceDBusName,
+            FsoFramework.Device.PowerControlServicePath, this );
 
 #if WANT_FSO_RESOURCE
         Idle.add( () => {
@@ -163,13 +179,37 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
         }
     }
 
+    protected void setup_wifi_interface( bool on )
+    {
+        try
+        {
+            var iface = new FsoFramework.Network.WextInterface( wifi_iface );
+
+            if ( on )
+            {
+                iface.up();
+                iface.set_power( true ); // TODO: add config option for that
+            }
+            else
+            {
+                iface.down();
+            }
+
+            iface.finish();
+        }
+        catch ( FsoFramework.Network.Error err )
+        {
+            logger.error( @"%s network interface $(wifi_iface) failed!".printf( on ? "Enabling" : "Disabling" ) );
+        }
+    }
+
     protected void start_bluetoothd()
     {
         logger.info("bluetoothd starting...");
         GLib.Process.spawn_async( GLib.Environment.get_variable( "PWD" ),
                                   bluetoothd,
                                   null,
-                                  GLib.SpawnFlags.SEARCH_PATH,
+                                  0,
                                   null,
                                   out this.bluetoothd_pid );
         logger.debug(@"bluetoothd pid: $(this.bluetoothd_pid)");
@@ -219,7 +259,11 @@ class RfKillPowerControl : FsoDevice.ISimplePowerControl, FreeSmartphone.Device.
             logger.error( @"Could not write rfkill event: $(strerror(errno))" );
         }
 
-        if ( ( bluetoothd_startup_handler == "fsodeviced" ) && ( this.type == "Bluetooth" )
+        if (this.type == "WiFi")
+        {
+            this.setup_wifi_interface( on );
+        }
+        else if ( ( bluetoothd_startup_handler == "fsodeviced" ) && ( this.type == "Bluetooth" )
              && ( on == true ) )
         {
             start_bluetoothd();
@@ -258,10 +302,10 @@ internal static IOChannel channel;
  **/
 public static string fso_factory_function( FsoFramework.Subsystem system ) throws Error
 {
+    instances = new HashTable<int,Kernel26.RfKillPowerControl>( direct_hash, direct_equal );
+
     subsystem = system;
-    // grab devfs paths
-    var config = FsoFramework.theConfig;
-    devfs_root = config.stringValue( "cornucopia", "devfs_root", "/dev" );
+    devfs_root = FsoFramework.theConfig.stringValue( "cornucopia", "devfs_root", "/dev" );
 
     fd = Posix.open( Path.build_filename( devfs_root, "rfkill" ), Posix.O_RDWR );
     if ( fd == -1 )
@@ -270,10 +314,10 @@ public static string fso_factory_function( FsoFramework.Subsystem system ) throw
     }
     else
     {
-        instances = new HashTable<int,Kernel26.RfKillPowerControl>( direct_hash, direct_equal );
         channel = new IOChannel.unix_new( fd );
         watch = channel.add_watch( IOCondition.IN | IOCondition.HUP, Kernel26.RfKillPowerControl.onActionFromRfKill );
     }
+
     return "fsodevice.kernel26_rfkill";
 }
 

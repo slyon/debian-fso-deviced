@@ -10,7 +10,7 @@ AC_GNU_SOURCE
 AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
-VALA_REQUIRED=0.12.1
+VALA_REQUIRED=0.14.2
 AC_PATH_PROG(VALAC, valac, valac)
 AC_SUBST(VALAC)
 m4_ifdef([AM_PROG_VALAC], [AM_PROG_VALAC([$VALA_REQUIRED])])
@@ -23,7 +23,7 @@ AC_SUBST(LDFLAGS)
 # required versions
 GLIB_REQUIRED=2.26.0
 GEE_REQUIRED=0.5.0
-FSO_GLIB_REQUIRED=2010.05.11.2
+FSO_GLIB_REQUIRED=2012.02.14.1
 FSO_FRAMEWORK_REQUIRED=0.2.4
 FSO_TRANSPORT_REQUIRED=0.9.7
 FSO_RESOURCE_REQUIRED=0.1.0
@@ -174,7 +174,12 @@ AC_CONFIG_FILES([
   conf/openmoko_gta/alsa-2.6.29/Makefile
   conf/openmoko_gta/alsa-2.6.31/Makefile
   conf/openmoko_gta/alsa-2.6.34/Makefile
+  conf/openmoko_gta/alsa-2.6.39/Makefile
+  conf/GTA04/Makefile
+  conf/GTA04/alsa-3.2/Makefile
   conf/palm_pre/Makefile
+  conf/herring/Makefile
+  conf/herring/alsa-default/Makefile
   data/Makefile
   data/org.freesmartphone.odeviced.service
   src/Makefile
@@ -201,13 +206,14 @@ AC_CONFIG_FILES([
   src/plugins/kernel_input/Makefile
   src/plugins/n900_powercontrol/Makefile
   src/plugins/openmoko_powercontrol/Makefile
+  src/plugins/gta04_quirks/Makefile
   src/plugins/palmpre_quirks/Makefile
+  src/plugins/herring_quirks/Makefile
   src/plugins/powercontrol_ifconfig/Makefile
   src/plugins/player_alsa/Makefile
   src/plugins/player_canberra/Makefile
   src/plugins/player_gstreamer/Makefile
   src/plugins/powersupply_n900/Makefile
-  src/plugins/proximity_palmpre/Makefile
   src/plugins/proximity_n900/Makefile
   src/plugins/router_alsa/Makefile
   src/plugins/router_qdsp5/Makefile

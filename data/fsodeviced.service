@@ -1,0 +1,11 @@
+[Unit]
+Description=FSO daemon implementing the device API
+After=dbus.socket
+
+[Service]
+Type=dbus
+BusName=org.freesmartphone.odeviced
+ExecStart=/usr/sbin/fsodeviced
+
+[Install]
+WantedBy=basic.target
