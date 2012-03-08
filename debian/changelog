@@ -1,3 +1,11 @@
+fso-deviced (0.9.5+git20120214-1) unstable; urgency=low
+
+  * New upstream snapshot
+  * remove openmoko-wifi-2.6.39.patch and ignore-om-gps.patch
+    both included upstream
+
+ -- Rico Rommel <rico@bierrommel.de>  Sat, 03 Mar 2012 21:13:02 +0100
+
 fso-deviced (0.9.5+git20110805-2) unstable; urgency=low
 
   * adapt wifi sysfs path for linux 2.6.39,

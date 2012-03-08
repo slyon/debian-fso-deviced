@@ -1,5 +1,3 @@
 use-private-libdir.patch
-powercontrol-gps.patch
 openmoko-wifi-2.6.39.patch
 fix-cleanfiles.patch
-om-ignore-gps.patch
