@@ -1,6 +1,4 @@
-Format: http://anonscm.debian.org/viewvc/dep/web/deps/dep5.mdwn?revision=174
-Upstream-Name: fso-deviced
-Upstream-Contact: http://www.freesmartphone.org
+Format: http://dep.debian.net/deps/dep5/
 Source: http://git.freesmartphone.org/?p=cornucopia.git;a=tree;f=fsodeviced
 
 Files: *

@@ -1,6 +1,9 @@
 Author: Niccolo Rigacci <niccolo@rigacci.org>
-Description: on linux 2.6.39 sysfs node for s3c2440-sdi
- changed to s3c-sdi
+Description: Fix wifi handling with kernel 2.6.34+
+ This patch fixes wifi power management if kernel 2.6.34 or newer kernels are
+ used.
+Debian-Bug: http://bugs.debian.org/647003
+Last-Update: 2011-10-30
 --- a/src/plugins/openmoko_powercontrol/plugin.vala
 +++ b/src/plugins/openmoko_powercontrol/plugin.vala
 @@ -181,6 +181,10 @@
