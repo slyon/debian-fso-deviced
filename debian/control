@@ -154,7 +154,7 @@ Depends: ${misc:Depends},
          ${shlibs:Depends},
          fso-deviced (= ${binary:Version})
 Provides: fso-deviced-platform
-Description: fso-deviced config files and plugins for PalmPre deviced
+Description: fso-deviced config files and plugins for PalmPre devices
  fsodeviced implements the freesmartphone.org Device API.
  .
  This API allows peripheral control, such as managing audio, backlight
@@ -201,3 +201,21 @@ Description: fso-deviced config files and plugins for HTC devices
  status.
  .
  This package contains all modules and config files needed for HTC devices.
+
+Package: fso-deviced-gta04
+Architecture: armel armhf
+Pre-Depends: ${misc:Pre-Depends}
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         fso-deviced (= ${binary:Version})
+Provides: fso-deviced-platform
+Description: fso-deviced config files and plugins for the GTA04
+ fsodeviced implements the freesmartphone.org Device API.
+ .
+ This API allows peripheral control, such as managing audio, backlight
+ brightness, LEDs, Vibrator, Accelerometer, and power control for devices
+ without dedicated controlling daemon. It can deal with charging notification
+ and RTC, forwarding button events and notifying about the system's idleness
+ status.
+ .
+ This package contains all modules and config files needed for GTA04 device.
