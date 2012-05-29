@@ -14,6 +14,3 @@ override_dh_strip:
 
 override_dh_installdocs:
 	dh_installdocs --link-doc=fso-deviced
-
-override_dh_installchangelogs:
-	dh_installchangelogs -XChangeLog
