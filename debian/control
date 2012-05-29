@@ -2,7 +2,9 @@ Source: fso-deviced
 Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
-Uploaders: Heiko Stuebner <heiko@sntech.de>, Sebastian Reichel <sre@debian.org>, Rico Rommel <rico@bierrommel.de>
+Uploaders: Heiko Stuebner <heiko@sntech.de>,
+           Sebastian Reichel <sre@debian.org>,
+           Rico Rommel <rico@bierrommel.de>
 DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
@@ -30,7 +32,9 @@ Vcs-Browser: http://git.debian.org/?p=pkg-fso/fso-deviced.git;a=summary
 Package: fso-deviced
 Architecture: linux-any
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, ${misc:Depends}, dbus
+Depends: ${misc:Depends},
+         ${shlibs:Depends},
+         dbus
 Recommends: fso-deviced-platform
 Description: freesmartphone.org device daemon
  fsodeviced implements the freesmartphone.org Device API.
@@ -48,8 +52,8 @@ Package: fso-deviced-dbg
 Architecture: linux-any
 Section: debug
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${shlibs:Depends}, 
-         ${misc:Depends},
+Depends: ${misc:Depends},
+         ${shlibs:Depends}, 
          fso-deviced (= ${binary:Version}), 
          fso-deviced-player-gstreamer (= ${binary:Version}),
          fso-deviced-player-canberra (= ${binary:Version}),
