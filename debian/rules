@@ -1,4 +1,6 @@
 #!/usr/bin/make -f
+export DEB_LDFLAGS_MAINT_APPEND := -Wl,--as-needed
+
 %:
 	dh $@ --with quilt --with autoreconf
 
@@ -14,3 +16,6 @@ override_dh_strip:
 
 override_dh_installdocs:
 	dh_installdocs --link-doc=fso-deviced
+
+override_dh_autoreconf:
+	dh_autoreconf --as-needed
