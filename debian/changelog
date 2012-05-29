@@ -1,3 +1,9 @@
+fso-deviced (0.11.0-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Sebastian Reichel <sre@debian.org>  Tue, 29 May 2012 20:13:28 +0200
+
 fso-deviced (0.9.5+git20120214-1) unstable; urgency=low
 
   * New upstream snapshot
