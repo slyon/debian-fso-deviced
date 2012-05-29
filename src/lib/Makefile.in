@@ -269,7 +269,7 @@ GTESTER = gtester
 GTESTER_REPORT = gtester-report
 
 # initialize variables for unconditional += appending
-EXTRA_DIST = 
+EXTRA_DIST = fsodevice-2.0.deps $(NULL)
 TEST_PROGS = 
 NULL = 
 AM_CFLAGS = \
