@@ -1,0 +1,4 @@
+[D-BUS Service]
+Name=org.freesmartphone.odeviced
+Exec=/usr/local/sbin/fsodeviced
+User=root
