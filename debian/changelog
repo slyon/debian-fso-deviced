@@ -2,6 +2,9 @@ fso-deviced (0.11.0-1) unstable; urgency=low
 
   * New upstream release
   * Update Debian Standards Version to 3.9.3
+  * Build with --as-needed
+  * Build Vala source code
+  * Drop all patches, which have been applied upstream
 
  -- Sebastian Reichel <sre@debian.org>  Tue, 29 May 2012 20:13:28 +0200
 
