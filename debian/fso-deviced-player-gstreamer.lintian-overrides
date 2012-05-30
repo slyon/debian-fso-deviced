@@ -1,5 +1,0 @@
-# The modules link against a private library from the mainpage, which contains
-# some common initialization stuff for plugins. All module packages have a
-# fso-usaged (= ${binary:Version}) dependency and are part of the same
-# sourcepackage.
-fso-deviced-player-gstreamer: binary-or-shlib-defines-rpath usr/lib/*/cornucopia/modules/fsodevice/* /usr/lib/*/cornucopia/libs/fsodevice
