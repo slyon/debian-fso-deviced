@@ -89,7 +89,7 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 	gchar* _tmp7_;
 	gboolean _tmp8_ = FALSE;
 	gboolean _tmp9_;
-	gchar* _tmp21_;
+	gchar* _tmp24_;
 	g_return_val_if_fail (subsystem != NULL, NULL);
 	_tmp0_ = fso_framework_theConfig;
 	_tmp1_ = _g_object_ref0 (_tmp0_);
@@ -128,6 +128,9 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 			Gta04GpsPowerControl* o;
 			Gta04GpsPowerControl* _tmp19_;
 			FsoDeviceBasePowerControl* _tmp20_;
+			Gta04GpsPowerControl* _tmp21_;
+			FsoFrameworkSubsystem* _tmp22_;
+			FsoDeviceBasePowerControlResource* _tmp23_;
 			_tmp16_ = subsystem;
 			_tmp17_ = gps_gpio;
 			_tmp18_ = gta04_gps_power_control_new (_tmp16_, _tmp17_);
@@ -135,13 +138,17 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 			_tmp19_ = o;
 			_tmp20_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp19_);
 			instances = g_list_append (instances, _tmp20_);
+			_tmp21_ = o;
+			_tmp22_ = subsystem;
+			_tmp23_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) _tmp21_, "GPS", _tmp22_);
+			resources = g_list_append (resources, _tmp23_);
 			_g_object_unref0 (o);
 		}
 		_g_free0 (gps_gpio);
 		_g_free0 (gpio);
 	}
-	_tmp21_ = g_strdup (GTA04_MODULE_NAME);
-	result = _tmp21_;
+	_tmp24_ = g_strdup (GTA04_MODULE_NAME);
+	result = _tmp24_;
 	_g_free0 (sysfs_root);
 	_g_object_unref0 (config);
 	return result;

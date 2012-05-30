@@ -385,7 +385,9 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 	N900BluetoothPowerControl* _tmp9_;
 	N900BluetoothPowerControl* bto;
 	FsoDeviceBasePowerControl* _tmp10_;
-	gchar* _tmp11_;
+	FsoFrameworkSubsystem* _tmp11_;
+	FsoDeviceBasePowerControlResource* _tmp12_;
+	gchar* _tmp13_;
 	g_return_val_if_fail (subsystem != NULL, NULL);
 	_tmp0_ = fso_framework_theConfig;
 	_tmp1_ = _g_object_ref0 (_tmp0_);
@@ -407,8 +409,11 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 	bto = _tmp9_;
 	_tmp10_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) bto);
 	instances = g_list_append (instances, _tmp10_);
-	_tmp11_ = g_strdup (MODULE_NAME);
-	result = _tmp11_;
+	_tmp11_ = subsystem;
+	_tmp12_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) bto, "Bluetooth", _tmp11_);
+	resources = g_list_append (resources, _tmp12_);
+	_tmp13_ = g_strdup (MODULE_NAME);
+	result = _tmp13_;
 	_g_object_unref0 (bto);
 	_g_object_unref0 (config);
 	return result;
