@@ -51,9 +51,7 @@ Description: freesmartphone.org device daemon
 Package: fso-deviced-dbg
 Architecture: linux-any
 Section: debug
-Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends},
-         ${shlibs:Depends}, 
          fso-deviced (= ${binary:Version}), 
          fso-deviced-player-gstreamer (= ${binary:Version}),
          fso-deviced-player-canberra (= ${binary:Version}),
