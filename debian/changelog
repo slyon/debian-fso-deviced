@@ -1,3 +1,9 @@
+fso-deviced (0.11.3-1) unstable; urgency=low
+
+  * New upstrem release
+
+ -- Simon Busch <morphis@gravedo.de>  Wed, 30 May 2012 20:39:53 +0200
+
 fso-deviced (0.11.2-1) unstable; urgency=low
 
   * New upstream release
