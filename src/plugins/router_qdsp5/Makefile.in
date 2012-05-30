@@ -264,7 +264,8 @@ GTESTER = gtester
 GTESTER_REPORT = gtester-report
 
 # initialize variables for unconditional += appending
-EXTRA_DIST = 
+# router_qdsp5_la_LIBTOOLFLAGS = --tag=disable-static
+EXTRA_DIST = playwav2.vapi $(NULL)
 TEST_PROGS = 
 NULL = 
 AM_CFLAGS = \
@@ -300,7 +301,6 @@ router_qdsp5_la_LIBADD = \
 	$(NULL)
 
 router_qdsp5_la_LDFLAGS = -no-undefined -module -avoid-version
-# router_qdsp5_la_LIBTOOLFLAGS = --tag=disable-static
 CLEANFILES = 
 MAINTAINERCLEANFILES = \
   Makefile.in \

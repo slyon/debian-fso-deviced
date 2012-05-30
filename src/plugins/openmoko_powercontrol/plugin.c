@@ -529,10 +529,10 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 	gboolean _tmp15_ = FALSE;
 	gboolean ignore_usbhost;
 	gboolean _tmp16_;
-	gboolean _tmp26_;
-	gboolean _tmp36_;
-	gboolean _tmp46_;
-	gchar* _tmp56_;
+	gboolean _tmp29_;
+	gboolean _tmp42_;
+	gboolean _tmp55_;
+	gchar* _tmp68_;
 	g_return_val_if_fail (subsystem != NULL, NULL);
 	_tmp0_ = fso_framework_theConfig;
 	_tmp1_ = _g_object_ref0 (_tmp0_);
@@ -578,6 +578,9 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 			OpenmokoDevicePowerControl* o;
 			OpenmokoDevicePowerControl* _tmp24_;
 			FsoDeviceBasePowerControl* _tmp25_;
+			OpenmokoDevicePowerControl* _tmp26_;
+			FsoFrameworkSubsystem* _tmp27_;
+			FsoDeviceBasePowerControlResource* _tmp28_;
 			_tmp21_ = subsystem;
 			_tmp22_ = bluetooth;
 			_tmp23_ = openmoko_device_power_control_new (_tmp21_, _tmp22_);
@@ -585,102 +588,127 @@ gchar* fso_factory_function (FsoFrameworkSubsystem* subsystem, GError** error) {
 			_tmp24_ = o;
 			_tmp25_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp24_);
 			instances = g_list_append (instances, _tmp25_);
+			_tmp26_ = o;
+			_tmp27_ = subsystem;
+			_tmp28_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) _tmp26_, "Bluetooth", _tmp27_);
+			resources = g_list_append (resources, _tmp28_);
 			_g_object_unref0 (o);
 		}
 		_g_free0 (bluetooth);
 	}
-	_tmp26_ = ignore_gps;
-	if (!_tmp26_) {
-		const gchar* _tmp27_;
-		gchar* _tmp28_ = NULL;
+	_tmp29_ = ignore_gps;
+	if (!_tmp29_) {
+		const gchar* _tmp30_;
+		gchar* _tmp31_ = NULL;
 		gchar* gps;
-		const gchar* _tmp29_;
-		gboolean _tmp30_ = FALSE;
-		_tmp27_ = devices;
-		_tmp28_ = g_build_filename (_tmp27_, "gta02-pm-gps.0", NULL);
-		gps = _tmp28_;
-		_tmp29_ = gps;
-		_tmp30_ = fso_framework_file_handling_isPresent (_tmp29_);
-		if (_tmp30_) {
-			FsoFrameworkSubsystem* _tmp31_;
-			const gchar* _tmp32_;
-			OpenmokoDevicePowerControl* _tmp33_;
+		const gchar* _tmp32_;
+		gboolean _tmp33_ = FALSE;
+		_tmp30_ = devices;
+		_tmp31_ = g_build_filename (_tmp30_, "gta02-pm-gps.0", NULL);
+		gps = _tmp31_;
+		_tmp32_ = gps;
+		_tmp33_ = fso_framework_file_handling_isPresent (_tmp32_);
+		if (_tmp33_) {
+			FsoFrameworkSubsystem* _tmp34_;
+			const gchar* _tmp35_;
+			OpenmokoDevicePowerControl* _tmp36_;
 			OpenmokoDevicePowerControl* o;
-			OpenmokoDevicePowerControl* _tmp34_;
-			FsoDeviceBasePowerControl* _tmp35_;
-			_tmp31_ = subsystem;
-			_tmp32_ = gps;
-			_tmp33_ = openmoko_device_power_control_new (_tmp31_, _tmp32_);
-			o = _tmp33_;
-			_tmp34_ = o;
-			_tmp35_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp34_);
-			instances = g_list_append (instances, _tmp35_);
+			OpenmokoDevicePowerControl* _tmp37_;
+			FsoDeviceBasePowerControl* _tmp38_;
+			OpenmokoDevicePowerControl* _tmp39_;
+			FsoFrameworkSubsystem* _tmp40_;
+			FsoDeviceBasePowerControlResource* _tmp41_;
+			_tmp34_ = subsystem;
+			_tmp35_ = gps;
+			_tmp36_ = openmoko_device_power_control_new (_tmp34_, _tmp35_);
+			o = _tmp36_;
+			_tmp37_ = o;
+			_tmp38_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp37_);
+			instances = g_list_append (instances, _tmp38_);
+			_tmp39_ = o;
+			_tmp40_ = subsystem;
+			_tmp41_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) _tmp39_, "GPS", _tmp40_);
+			resources = g_list_append (resources, _tmp41_);
 			_g_object_unref0 (o);
 		}
 		_g_free0 (gps);
 	}
-	_tmp36_ = ignore_usbhost;
-	if (!_tmp36_) {
-		const gchar* _tmp37_;
-		gchar* _tmp38_ = NULL;
+	_tmp42_ = ignore_usbhost;
+	if (!_tmp42_) {
+		const gchar* _tmp43_;
+		gchar* _tmp44_ = NULL;
 		gchar* usbhost;
-		const gchar* _tmp39_;
-		gboolean _tmp40_ = FALSE;
-		_tmp37_ = devices;
-		_tmp38_ = g_build_filename (_tmp37_, "gta02-pm-usbhost.0", NULL);
-		usbhost = _tmp38_;
-		_tmp39_ = usbhost;
-		_tmp40_ = fso_framework_file_handling_isPresent (_tmp39_);
-		if (_tmp40_) {
-			FsoFrameworkSubsystem* _tmp41_;
-			const gchar* _tmp42_;
-			OpenmokoUsbHostModeControl* _tmp43_;
+		const gchar* _tmp45_;
+		gboolean _tmp46_ = FALSE;
+		_tmp43_ = devices;
+		_tmp44_ = g_build_filename (_tmp43_, "gta02-pm-usbhost.0", NULL);
+		usbhost = _tmp44_;
+		_tmp45_ = usbhost;
+		_tmp46_ = fso_framework_file_handling_isPresent (_tmp45_);
+		if (_tmp46_) {
+			FsoFrameworkSubsystem* _tmp47_;
+			const gchar* _tmp48_;
+			OpenmokoUsbHostModeControl* _tmp49_;
 			OpenmokoUsbHostModeControl* o;
-			OpenmokoUsbHostModeControl* _tmp44_;
-			FsoDeviceBasePowerControl* _tmp45_;
-			_tmp41_ = subsystem;
-			_tmp42_ = usbhost;
-			_tmp43_ = openmoko_usb_host_mode_control_new (_tmp41_, _tmp42_);
-			o = _tmp43_;
-			_tmp44_ = o;
-			_tmp45_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp44_);
-			instances = g_list_append (instances, _tmp45_);
+			OpenmokoUsbHostModeControl* _tmp50_;
+			FsoDeviceBasePowerControl* _tmp51_;
+			OpenmokoUsbHostModeControl* _tmp52_;
+			FsoFrameworkSubsystem* _tmp53_;
+			FsoDeviceBasePowerControlResource* _tmp54_;
+			_tmp47_ = subsystem;
+			_tmp48_ = usbhost;
+			_tmp49_ = openmoko_usb_host_mode_control_new (_tmp47_, _tmp48_);
+			o = _tmp49_;
+			_tmp50_ = o;
+			_tmp51_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp50_);
+			instances = g_list_append (instances, _tmp51_);
+			_tmp52_ = o;
+			_tmp53_ = subsystem;
+			_tmp54_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) _tmp52_, "UsbHost", _tmp53_);
+			resources = g_list_append (resources, _tmp54_);
 			_g_object_unref0 (o);
 		}
 		_g_free0 (usbhost);
 	}
-	_tmp46_ = ignore_wifi;
-	if (!_tmp46_) {
-		const gchar* _tmp47_;
-		gchar* _tmp48_ = NULL;
+	_tmp55_ = ignore_wifi;
+	if (!_tmp55_) {
+		const gchar* _tmp56_;
+		gchar* _tmp57_ = NULL;
 		gchar* wifi;
-		const gchar* _tmp49_;
-		gboolean _tmp50_ = FALSE;
-		_tmp47_ = drivers;
-		_tmp48_ = g_build_filename (_tmp47_, "s3c2440-sdi", NULL);
-		wifi = _tmp48_;
-		_tmp49_ = wifi;
-		_tmp50_ = fso_framework_file_handling_isPresent (_tmp49_);
-		if (_tmp50_) {
-			FsoFrameworkSubsystem* _tmp51_;
-			const gchar* _tmp52_;
-			OpenmokoWiFiPowerControl* _tmp53_;
+		const gchar* _tmp58_;
+		gboolean _tmp59_ = FALSE;
+		_tmp56_ = drivers;
+		_tmp57_ = g_build_filename (_tmp56_, "s3c2440-sdi", NULL);
+		wifi = _tmp57_;
+		_tmp58_ = wifi;
+		_tmp59_ = fso_framework_file_handling_isPresent (_tmp58_);
+		if (_tmp59_) {
+			FsoFrameworkSubsystem* _tmp60_;
+			const gchar* _tmp61_;
+			OpenmokoWiFiPowerControl* _tmp62_;
 			OpenmokoWiFiPowerControl* o;
-			OpenmokoWiFiPowerControl* _tmp54_;
-			FsoDeviceBasePowerControl* _tmp55_;
-			_tmp51_ = subsystem;
-			_tmp52_ = wifi;
-			_tmp53_ = openmoko_wi_fi_power_control_new (_tmp51_, _tmp52_);
-			o = _tmp53_;
-			_tmp54_ = o;
-			_tmp55_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp54_);
-			instances = g_list_append (instances, _tmp55_);
+			OpenmokoWiFiPowerControl* _tmp63_;
+			FsoDeviceBasePowerControl* _tmp64_;
+			OpenmokoWiFiPowerControl* _tmp65_;
+			FsoFrameworkSubsystem* _tmp66_;
+			FsoDeviceBasePowerControlResource* _tmp67_;
+			_tmp60_ = subsystem;
+			_tmp61_ = wifi;
+			_tmp62_ = openmoko_wi_fi_power_control_new (_tmp60_, _tmp61_);
+			o = _tmp62_;
+			_tmp63_ = o;
+			_tmp64_ = _g_object_ref0 ((FsoDeviceBasePowerControl*) _tmp63_);
+			instances = g_list_append (instances, _tmp64_);
+			_tmp65_ = o;
+			_tmp66_ = subsystem;
+			_tmp67_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) _tmp65_, "WiFi", _tmp66_);
+			resources = g_list_append (resources, _tmp67_);
 			_g_object_unref0 (o);
 		}
 		_g_free0 (wifi);
 	}
-	_tmp56_ = g_strdup (OPENMOKO_CONFIG_SECTION);
-	result = _tmp56_;
+	_tmp68_ = g_strdup (OPENMOKO_CONFIG_SECTION);
+	result = _tmp68_;
 	_g_free0 (drivers);
 	_g_free0 (devices);
 	_g_object_unref0 (config);
