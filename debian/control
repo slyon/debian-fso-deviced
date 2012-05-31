@@ -3,8 +3,9 @@ Section: misc
 Priority: extra
 Maintainer: Debian FreeSmartphone.Org Team <pkg-fso-maint@lists.alioth.debian.org>
 Uploaders: Heiko Stuebner <heiko@sntech.de>,
+           Rico Rommel <rico@bierrommel.de>,
            Sebastian Reichel <sre@debian.org>,
-           Rico Rommel <rico@bierrommel.de>
+           Simon Busch <morphis@gravedo.de>
 DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,

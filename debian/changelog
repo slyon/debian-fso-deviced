@@ -1,5 +1,9 @@
 fso-deviced (0.11.3-1) unstable; urgency=low
 
+  [ Sebastian Reichel ]
+  * Add Simon Busch to Uploaders
+
+  [ Simon Busch ]
   * New upstrem release
 
  -- Simon Busch <morphis@gravedo.de>  Wed, 30 May 2012 20:39:53 +0200
