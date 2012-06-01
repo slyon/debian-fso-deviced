@@ -125,6 +125,8 @@ enum  {
 };
 static Kernel26RfKillPowerControl* kernel26_rf_kill_power_control_new (guint id, guint8 type, gboolean softoff, gboolean hardoff);
 static Kernel26RfKillPowerControl* kernel26_rf_kill_power_control_construct (GType object_type, guint id, guint8 type, gboolean softoff, gboolean hardoff);
+static gboolean __lambda0_ (Kernel26RfKillPowerControl* self);
+static gboolean ___lambda0__gsource_func (gpointer self);
 static gchar* kernel26_rf_kill_power_control_real_repr (FsoFrameworkAbstractObject* base);
 static void kernel26_rf_kill_power_control_init (Kernel26RfKillPowerControl* self);
 gboolean kernel26_rf_kill_power_control_onActionFromRfKill (GIOChannel* source, GIOCondition condition);
@@ -150,6 +152,28 @@ void fso_register_function (GTypeModule* module);
 static const gchar* KERNEL26_RF_KILL_POWER_CONTROL_opValue[7] = {"Add", "Del", "Change", "ChangeAll", "unknown:4", "unknown:5", "unknown:6"};
 static const gchar* KERNEL26_RF_KILL_POWER_CONTROL_typeValue[8] = {"All", "WiFi", "Bluetooth", "UWB", "WiMax", "WWan", "GPS", "FM"};
 static const gchar* KERNEL26_RF_KILL_POWER_CONTROL_bluetoothd[2] = {"/usr/sbin/bluetoothd", "-n"};
+
+static gboolean __lambda0_ (Kernel26RfKillPowerControl* self) {
+	gboolean result = FALSE;
+	const gchar* _tmp0_;
+	FsoFrameworkSubsystem* _tmp1_;
+	FsoDeviceBasePowerControlResource* _tmp2_;
+	_tmp0_ = self->priv->type;
+	_tmp1_ = subsystem;
+	_tmp2_ = fso_device_base_power_control_resource_new ((FsoDeviceISimplePowerControl*) self, _tmp0_, _tmp1_);
+	_g_object_unref0 (self->priv->resource);
+	self->priv->resource = _tmp2_;
+	result = FALSE;
+	return result;
+}
+
+
+static gboolean ___lambda0__gsource_func (gpointer self) {
+	gboolean result;
+	result = __lambda0_ (self);
+	return result;
+}
+
 
 static Kernel26RfKillPowerControl* kernel26_rf_kill_power_control_construct (GType object_type, guint id, guint8 type, gboolean softoff, gboolean hardoff) {
 	Kernel26RfKillPowerControl * self = NULL;
@@ -252,6 +276,7 @@ static Kernel26RfKillPowerControl* kernel26_rf_kill_power_control_construct (GTy
 	self->priv->hardoff = _tmp17_;
 	_tmp18_ = subsystem;
 	fso_framework_subsystem_registerObjectForServiceWithPrefix (_tmp18_, FREE_SMARTPHONE_DEVICE_TYPE_POWER_CONTROL, (GBoxedCopyFunc) g_object_ref, g_object_unref, FSO_FRAMEWORK_DEVICE_ServiceDBusName, FSO_FRAMEWORK_DEVICE_PowerControlServicePath, (FreeSmartphoneDevicePowerControl*) self);
+	g_idle_add_full (G_PRIORITY_DEFAULT_IDLE, ___lambda0__gsource_func, g_object_ref (self), g_object_unref);
 	_tmp19_ = ((FsoFrameworkAbstractObject*) self)->logger;
 	fso_framework_logger_info (_tmp19_, "created.");
 	return self;
