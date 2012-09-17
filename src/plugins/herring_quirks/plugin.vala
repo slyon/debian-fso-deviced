@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2011-2012 Simon Busch <morphis@gravedo.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -25,7 +25,8 @@ namespace Herring
 }
 
 Herring.ResumeHandler resumehandler = null;
-Herring.AlsaStreamKeeper streamkeeper = null;
+Herring.WiFiPowerControl wifipowercontrol = null;
+Herring.AlsaPowerControl alsapowercontrol = null;
 
 /**
  * This function gets called on plugin initialization time.
@@ -36,10 +37,15 @@ Herring.AlsaStreamKeeper streamkeeper = null;
 public static string fso_factory_function( FsoFramework.Subsystem subsystem ) throws Error
 {
     var config = FsoFramework.theConfig;
-    var sysfs_root = config.stringValue( "cornucopia", "sysfs_root", "/sys" );
 
-    resumehandler = new Herring.ResumeHandler();
-    streamkeeper = new Herring.AlsaStreamKeeper();
+    if ( config.hasSection( @"$(Herring.MODULE_NAME)/resume_handler" ) )
+        resumehandler = new Herring.ResumeHandler();
+
+    if ( config.hasSection( @"$(Herring.MODULE_NAME)/wifi_power_control" ) )
+        wifipowercontrol = new Herring.WiFiPowerControl( subsystem );
+
+    if ( config.hasSection( @"$(Herring.MODULE_NAME)/alsa_power_control" ) )
+        alsapowercontrol = new Herring.AlsaPowerControl( subsystem );
 
     return Herring.MODULE_NAME;
 }

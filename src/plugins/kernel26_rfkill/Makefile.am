@@ -24,11 +24,13 @@ kernel26_rfkill_la_VALAFLAGS = \
 	--pkg fsoframework-2.0 \
 	--pkg fsodevice-2.0 \
 	--pkg fsosystem-2.0 \
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 kernel26_rfkill_la_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 kernel26_rfkill_la_LIBADD = \
 	$(FSO_LIBS) \

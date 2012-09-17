@@ -1,5 +1,5 @@
 m4_define([fsogsmd_released], [1])
-m4_define([fsogsmd_base_version], [0.11.4])
+m4_define([fsogsmd_base_version], [0.12.0-rc2])
 m4_define([fsogsmd_maybe_gitrev], m4_if(fsogsmd_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsogsmd_version], m4_if(fsogsmd_released, [1], [fsogsmd_base_version], [fsogsmd_base_version-fsogsmd_maybe_gitrev]))
 
@@ -27,7 +27,7 @@ AC_SUBST(LDFLAGS)
 # Vala building options -- allows tarball builds without installing vala
 #########################################################################################
 
-VALA_REQUIRED=0.14.2
+VALA_REQUIRED=0.16.0
 
 AC_ARG_ENABLE([vala], AS_HELP_STRING([--enable-vala],[Enable building from Vala sources]),
               [enable_vala=$enableval], [enable_vala=no])
@@ -54,7 +54,7 @@ AM_CONDITIONAL([HAVE_VALA], [test "x$enable_vala" = "xyes"])
 
 GLIB_REQUIRED=2.26.0
 GEE_REQUIRED=0.5.0
-FSO_GLIB_REQUIRED=2012.05.24.1
+FSO_GLIB_REQUIRED=2012.07.27.1
 FSO_REQUIRED=0.11.0
 ALSA_REQUIRED=0.20
 CANBERRA_REQUIRED=0.17
@@ -216,8 +216,7 @@ AC_CONFIG_FILES([
   conf/openmoko_gta/alsa-2.6.34/Makefile
   conf/openmoko_gta/alsa-2.6.39/Makefile
   conf/GTA04/Makefile
-  conf/GTA04/alsa-3.2/Makefile
-  conf/palm_pre/Makefile
+  conf/GTA04/alsa-3.4/Makefile
   conf/herring/Makefile
   conf/herring/alsa-default/Makefile
   data/Makefile
@@ -230,7 +229,6 @@ AC_CONFIG_FILES([
   src/plugins/accelerometer/Makefile
   src/plugins/accelerometer_kxsd9/Makefile
   src/plugins/accelerometer_lis302/Makefile
-  src/plugins/ambientlight_n900/Makefile
   src/plugins/audio/Makefile
   src/plugins/backlight_omappanel/Makefile
   src/plugins/gpio_input/Makefile
@@ -245,19 +243,15 @@ AC_CONFIG_FILES([
   src/plugins/kernel_idle/Makefile
   src/plugins/kernel_info/Makefile
   src/plugins/kernel_input/Makefile
-  src/plugins/n900_powercontrol/Makefile
   src/plugins/openmoko_powercontrol/Makefile
   src/plugins/gta04_quirks/Makefile
-  src/plugins/palmpre_quirks/Makefile
   src/plugins/herring_quirks/Makefile
+  src/plugins/n900_quirks/Makefile
   src/plugins/powercontrol_ifconfig/Makefile
   src/plugins/player_alsa/Makefile
   src/plugins/player_canberra/Makefile
   src/plugins/player_gstreamer/Makefile
-  src/plugins/powersupply_n900/Makefile
-  src/plugins/proximity_n900/Makefile
   src/plugins/router_alsa/Makefile
-  src/plugins/router_qdsp5/Makefile
   src/plugins/thinkpad_powercontrol/Makefile
   src/plugins/vibrator_ledclass/Makefile
   src/plugins/vibrator_omapvibe/Makefile

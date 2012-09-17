@@ -38,6 +38,8 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(dist_conf_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/Makefile.decl
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = conf/GTA04
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -262,8 +264,12 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
-SUBDIRS = alsa-3.2
+SUBDIRS = alsa-3.4
 confdir = $(sysconfdir)/freesmartphone/conf/GTA04
 dist_conf_DATA = \
 	fsodeviced.conf \
@@ -699,7 +705,8 @@ check-local: test
 
 install-data-local:
 	$(mkinstalldirs) $(DESTDIR)/$(sysconfdir)/freesmartphone/conf/
-	ln -sf alsa-3.2 $(DESTDIR)/$(sysconfdir)/freesmartphone/conf/GTA04/alsa-default
+	ln -sf alsa-3.4 $(DESTDIR)/$(sysconfdir)/freesmartphone/conf/GTA04/alsa-default
+	ln -sf alsa-3.4 alsa-3.2
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -37,9 +37,11 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl
-@WANT_CANBERRA_TRUE@am__append_1 = player_canberra
-@WANT_GSTREAMER_TRUE@am__append_2 = player_gstreamer
-@WANT_RFKILL_TRUE@am__append_3 = kernel26_rfkill
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
+@WANT_CANBERRA_TRUE@am__append_3 = player_canberra
+@WANT_GSTREAMER_TRUE@am__append_4 = player_gstreamer
+@WANT_RFKILL_TRUE@am__append_5 = kernel26_rfkill
 subdir = src/plugins
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -71,17 +73,15 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = ambientlight_n900 accelerometer accelerometer_kxsd9 \
-	accelerometer_lis302 audio router_alsa router_qdsp5 \
-	player_alsa backlight_omappanel kernel26_cpufreq \
-	kernel26_display kernel26_firmwareloader kernel26_leds \
-	kernel26_powersupply kernel26_rtc kernel_idle kernel_info \
-	kernel_input n900_powercontrol openmoko_powercontrol \
-	thinkpad_powercontrol powercontrol_ifconfig powersupply_n900 \
-	vibrator_ledclass vibrator_omapvibe vibrator_timedoutputclass \
-	palmpre_quirks gta04_quirks herring_quirks proximity_n900 \
-	gpio_input dummy_input player_canberra player_gstreamer \
-	kernel26_rfkill
+DIST_SUBDIRS = accelerometer accelerometer_kxsd9 accelerometer_lis302 \
+	audio router_alsa player_alsa backlight_omappanel \
+	kernel26_cpufreq kernel26_display kernel26_firmwareloader \
+	kernel26_leds kernel26_powersupply kernel26_rtc kernel_idle \
+	kernel_info kernel_input openmoko_powercontrol \
+	thinkpad_powercontrol powercontrol_ifconfig vibrator_ledclass \
+	vibrator_omapvibe vibrator_timedoutputclass gta04_quirks \
+	herring_quirks n900_quirks gpio_input dummy_input \
+	player_canberra player_gstreamer kernel26_rfkill
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 am__relativize = \
   dir0=`pwd`; \
@@ -245,19 +245,21 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 AUTOMAKE_OPTIONS = subdir-objects
-SUBDIRS = ambientlight_n900 accelerometer accelerometer_kxsd9 \
-	accelerometer_lis302 audio router_alsa router_qdsp5 \
-	player_alsa backlight_omappanel kernel26_cpufreq \
+SUBDIRS = accelerometer accelerometer_kxsd9 accelerometer_lis302 audio \
+	router_alsa player_alsa backlight_omappanel kernel26_cpufreq \
 	kernel26_display kernel26_firmwareloader kernel26_leds \
 	kernel26_powersupply kernel26_rtc kernel_idle kernel_info \
-	kernel_input n900_powercontrol openmoko_powercontrol \
-	thinkpad_powercontrol powercontrol_ifconfig powersupply_n900 \
-	vibrator_ledclass vibrator_omapvibe vibrator_timedoutputclass \
-	palmpre_quirks gta04_quirks herring_quirks proximity_n900 \
-	gpio_input dummy_input $(NULL) $(am__append_1) $(am__append_2) \
-	$(am__append_3)
+	kernel_input openmoko_powercontrol thinkpad_powercontrol \
+	powercontrol_ifconfig vibrator_ledclass vibrator_omapvibe \
+	vibrator_timedoutputclass gta04_quirks herring_quirks \
+	n900_quirks gpio_input dummy_input $(NULL) $(am__append_3) \
+	$(am__append_4) $(am__append_5)
 MAINTAINERCLEANFILES = \
 	Makefile.in \
 	$(NULL)

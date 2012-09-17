@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2012 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,14 +27,17 @@ namespace FsoDevice {
 public class BasePowerControlResource : FsoFramework.AbstractDBusResource
 {
     private weak ISimplePowerControl bpc;
+    private FreeSmartphone.UsageResourcePolicy policy;
 
-    public BasePowerControlResource( ISimplePowerControl bpc, string name, FsoFramework.Subsystem subsystem )
+    public BasePowerControlResource( ISimplePowerControl bpc, string name, FsoFramework.Subsystem subsystem,
+        FreeSmartphone.UsageResourcePolicy policy = FreeSmartphone.UsageResourcePolicy.AUTO )
     {
         base( name, subsystem );
         this.bpc = bpc;
+        this.policy = policy;
     }
 
-    public override async void enableResource()
+    public override async void enableResource() throws FreeSmartphone.ResourceError
     {
         logger.debug( "enabling..." );
         bpc.setPower( true );
@@ -54,6 +57,11 @@ public class BasePowerControlResource : FsoFramework.AbstractDBusResource
     public override async void resumeResource()
     {
         logger.debug( "resuming..." );
+    }
+
+    public override FreeSmartphone.UsageResourcePolicy default_policy()
+    {
+        return policy;
     }
 }
 

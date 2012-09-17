@@ -38,8 +38,11 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl alsa.c \
-	herring_quirks_la_vala.stamp plugin.c resumehandler.c
-@WANT_FSORESOURCE_TRUE@am__append_1 = -D WANT_FSO_RESOURCE
+	herring_quirks_la_vala.stamp plugin.c powercontrol.c \
+	resumehandler.c
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
+@WANT_FSORESOURCE_TRUE@am__append_3 = -D WANT_FSO_RESOURCE
 subdir = src/plugins/herring_quirks
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -85,7 +88,7 @@ herring_quirks_la_DEPENDENCIES = $(am__DEPENDENCIES_1) \
 am__objects_1 =
 am_herring_quirks_la_OBJECTS = herring_quirks_la-plugin.lo \
 	herring_quirks_la-resumehandler.lo herring_quirks_la-alsa.lo \
-	$(am__objects_1)
+	herring_quirks_la-powercontrol.lo $(am__objects_1)
 herring_quirks_la_OBJECTS = $(am_herring_quirks_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -269,22 +272,26 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 AM_CFLAGS = \
 	-DG_LOG_DOMAIN=\"fsodevice.herring_quirks\" \
 	$(NULL)
 
-AM_VALAFLAGS = $(am__append_1)
+AM_VALAFLAGS = $(am__append_3)
 modlibexecdir = $(libdir)/cornucopia/modules/fsodevice
 modlibexec_LTLIBRARIES = herring_quirks.la
 herring_quirks_la_SOURCES = \
 	plugin.vala \
 	resumehandler.vala \
 	alsa.vala \
+	powercontrol.vala \
 	$(NULL)
 
 herring_quirks_la_VALAFLAGS = \
-	$(AM_VALAFLAGS) \
 	--basedir $(top_srcdir) \
 	--vapidir $(top_srcdir)/fsoframework \
 	--vapidir $(top_srcdir)/vapi \
@@ -297,6 +304,7 @@ herring_quirks_la_VALAFLAGS = \
 	--pkg fsotransport-2.0 \
 	--pkg fsosystem-2.0 \
 	--pkg fsodevice-2.0 \
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 herring_quirks_la_CFLAGS = \
@@ -304,6 +312,7 @@ herring_quirks_la_CFLAGS = \
 	-I$(top_srcdir) \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 herring_quirks_la_LIBADD = \
@@ -396,6 +405,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/herring_quirks_la-alsa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/herring_quirks_la-plugin.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/herring_quirks_la-powercontrol.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/herring_quirks_la-resumehandler.Plo@am__quote@
 
 .c.o:
@@ -439,6 +449,13 @@ herring_quirks_la-alsa.lo: alsa.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='alsa.c' object='herring_quirks_la-alsa.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(herring_quirks_la_CFLAGS) $(CFLAGS) -c -o herring_quirks_la-alsa.lo `test -f 'alsa.c' || echo '$(srcdir)/'`alsa.c
+
+herring_quirks_la-powercontrol.lo: powercontrol.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(herring_quirks_la_CFLAGS) $(CFLAGS) -MT herring_quirks_la-powercontrol.lo -MD -MP -MF $(DEPDIR)/herring_quirks_la-powercontrol.Tpo -c -o herring_quirks_la-powercontrol.lo `test -f 'powercontrol.c' || echo '$(srcdir)/'`powercontrol.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/herring_quirks_la-powercontrol.Tpo $(DEPDIR)/herring_quirks_la-powercontrol.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='powercontrol.c' object='herring_quirks_la-powercontrol.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(herring_quirks_la_CFLAGS) $(CFLAGS) -c -o herring_quirks_la-powercontrol.lo `test -f 'powercontrol.c' || echo '$(srcdir)/'`powercontrol.c
 $(srcdir)/plugin.c: $(srcdir)/herring_quirks_la_vala.stamp
 	@if test -f $@; then :; else rm -f $(srcdir)/herring_quirks_la_vala.stamp; fi
 	@if test -f $@; then :; else \
@@ -450,6 +467,11 @@ $(srcdir)/resumehandler.c: $(srcdir)/herring_quirks_la_vala.stamp
 	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/herring_quirks_la_vala.stamp; \
 	fi
 $(srcdir)/alsa.c: $(srcdir)/herring_quirks_la_vala.stamp
+	@if test -f $@; then :; else rm -f $(srcdir)/herring_quirks_la_vala.stamp; fi
+	@if test -f $@; then :; else \
+	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/herring_quirks_la_vala.stamp; \
+	fi
+$(srcdir)/powercontrol.c: $(srcdir)/herring_quirks_la_vala.stamp
 	@if test -f $@; then :; else rm -f $(srcdir)/herring_quirks_la_vala.stamp; fi
 	@if test -f $@; then :; else \
 	  $(MAKE) $(AM_MAKEFLAGS) $(srcdir)/herring_quirks_la_vala.stamp; \
@@ -589,6 +611,7 @@ maintainer-clean-generic:
 	-rm -f alsa.c
 	-rm -f herring_quirks_la_vala.stamp
 	-rm -f plugin.c
+	-rm -f powercontrol.c
 	-rm -f resumehandler.c
 	-test -z "$(MAINTAINERCLEANFILES)" || rm -f $(MAINTAINERCLEANFILES)
 clean: clean-am
