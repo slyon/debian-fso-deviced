@@ -38,7 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl dummy_input_la_vala.stamp plugin.c
-@WANT_DEBUG_TRUE@am__append_1 = -g -D DEBUG
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
 @WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = src/plugins/dummy_input
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -266,10 +266,16 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
-AM_CFLAGS = -DG_LOG_DOMAIN=\"fsodevice.dummy_input\" $(NULL) \
-	$(am__append_2)
-AM_VALAFLAGS = $(am__append_1)
+AM_CFLAGS = \
+	-DG_LOG_DOMAIN=\"fsodevice.dummy_input\" \
+	$(NULL)
+
+AM_VALAFLAGS = 
 modlibexecdir = $(libdir)/cornucopia/modules/fsodevice
 modlibexec_LTLIBRARIES = dummy_input.la
 dummy_input_la_SOURCES = plugin.vala
@@ -289,6 +295,7 @@ dummy_input_la_CFLAGS = \
 	-I$(top_srcdir)/src/lib \
 	$(FSO_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 dummy_input_la_LIBADD = \
@@ -685,6 +692,7 @@ test-report perf-report full-report:	${TEST_PROGS}
 .PHONY: test test-report perf-report full-report
 # run make test as part of make check
 check-local: test
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

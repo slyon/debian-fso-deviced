@@ -38,6 +38,8 @@ build_triplet = @build@
 host_triplet = @host@
 DIST_COMMON = $(dist_conf_DATA) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(top_srcdir)/Makefile.decl
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = conf/herring
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -262,12 +264,22 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = 
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 SUBDIRS = alsa-default
 confdir = $(sysconfdir)/freesmartphone/conf/herring
 dist_conf_DATA = \
 	fsodeviced.conf \
 	alsa.conf \
+	$(NULL)
+
+
+# boards compatible with herring
+COMPAT = \
+	crespo \
 	$(NULL)
 
 MAINTAINERCLEANFILES = Makefile.in
@@ -583,7 +595,7 @@ info: info-recursive
 
 info-am:
 
-install-data-am: install-dist_confDATA
+install-data-am: install-data-local install-dist_confDATA
 
 install-dvi: install-dvi-recursive
 
@@ -637,15 +649,15 @@ uninstall-am: uninstall-dist_confDATA
 	clean-libtool ctags ctags-recursive distclean \
 	distclean-generic distclean-libtool distclean-tags distdir dvi \
 	dvi-am html html-am info info-am install install-am \
-	install-data install-data-am install-dist_confDATA install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags tags-recursive uninstall uninstall-am \
-	uninstall-dist_confDATA
+	install-data install-data-am install-data-local \
+	install-dist_confDATA install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am uninstall-dist_confDATA
 
 
 ### testing rules
@@ -696,6 +708,10 @@ test-report perf-report full-report:	${TEST_PROGS}
 .PHONY: test test-report perf-report full-report
 # run make test as part of make check
 check-local: test
+
+install-data-local:
+	$(mkinstalldirs) $(DESTDIR)/$(sysconfdir)/freesmartphone/conf/
+	for compat in $(COMPAT); do ln -sf ./herring $(DESTDIR)/$(sysconfdir)/freesmartphone/conf/$$compat; done
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Simon Busch <morphis@gravedo.de>
+ * Copyright (C) 2011-2012 Simon Busch <morphis@gravedo.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -140,8 +140,8 @@ internal class Herring.ResumeHandler : FsoFramework.AbstractObject
     {
         Idle.add( () => { request_usage_service(); return false; } );
 
-        inputnodenumber = config.intValue( Herring.MODULE_NAME, "wakeup_inputnode", -1 );
-        powerkeycode = config.intValue( Herring.MODULE_NAME, "wakeup_powerkeycode", -1 );
+        inputnodenumber = config.intValue( @"$(Herring.MODULE_NAME)/resume_handler", "wakeup_inputnode", -1 );
+        powerkeycode = config.intValue( @"$(Herring.MODULE_NAME)/resume_handler", "wakeup_powerkeycode", -1 );
     }
 
     public override string repr()

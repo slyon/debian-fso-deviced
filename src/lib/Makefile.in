@@ -40,6 +40,8 @@ DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.decl accelerometer.c alsa.c \
 	audioplayer.c audiorouter.c fsodevice.h input.c \
 	libfsodevice_la_vala.stamp powercontrol.c resource.c
+@WANT_DEBUG_TRUE@am__append_1 = --debug -D DEBUG
+@WANT_DEBUG_TRUE@am__append_2 = -ggdb -O0
 subdir = src/lib
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -271,6 +273,10 @@ GTESTER_REPORT = gtester-report
 # initialize variables for unconditional += appending
 EXTRA_DIST = fsodevice-2.0.deps $(NULL)
 TEST_PROGS = 
+
+# debug flags for vala and gcc
+DEBUG_VALAFLAGS = $(am__append_1)
+DEBUG_CFLAGS = $(am__append_2)
 NULL = 
 AM_CFLAGS = \
 	-DG_LOG_DOMAIN=\"fsodevice.lib\" \
@@ -308,6 +314,7 @@ libfsodevice_la_CFLAGS = \
 	$(FSO_CFLAGS) \
 	$(ALSA_CFLAGS) \
 	$(GLIB_CFLAGS) \
+	$(DEBUG_CFLAGS) \
 	$(NULL)
 
 libfsodevice_la_LIBADD = \
@@ -795,6 +802,7 @@ test-report perf-report full-report:	${TEST_PROGS}
 .PHONY: test test-report perf-report full-report
 # run make test as part of make check
 check-local: test
+	$(DEBUG_VALAFLAGS) \
 	$(NULL)
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

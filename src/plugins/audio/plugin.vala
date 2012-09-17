@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2012 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -115,9 +115,6 @@ class AudioManager : FreeSmartphone.Device.Audio,
                 break;
             case "qdsp5":
                 typename = "RouterQdsp5";
-                break;
-            case "palmpre":
-                typename = "RouterPalmPre";
                 break;
             default:
                 typename = "NullRouter";

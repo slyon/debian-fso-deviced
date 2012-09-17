@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2009-2011 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
+ * Copyright (C) 2009-2012 Michael 'Mickey' Lauer <mlauer@vanille-media.de>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,7 +27,7 @@ public interface AudioRouter : GLib.Object
     public abstract string pullScenario() throws FreeSmartphone.Device.AudioError;
     public abstract void pushScenario( string scenario );
     public abstract void setScenario( string scenario );
-    public abstract void saveScenario( string scenario );
+    public abstract void saveScenario( string scenario ) throws FreeSmartphone.Error;
     public abstract uint8 currentVolume() throws FreeSmartphone.Error;
     public abstract void setVolume( uint8 volume ) throws FreeSmartphone.Error;
 }
@@ -62,7 +62,7 @@ public class NullRouter : AudioRouter, GLib.Object
     {
     }
 
-    public void saveScenario( string scenario )
+    public void saveScenario( string scenario ) throws FreeSmartphone.Error
     {
     }
 
@@ -76,7 +76,7 @@ public class NullRouter : AudioRouter, GLib.Object
     }
 }
 
-public abstract class BaseAudioRouter : AudioRouter, GLib.Object
+public abstract class BaseAudioRouter : AudioRouter, FsoFramework.AbstractObject
 {
     public abstract bool isScenarioAvailable( string scenario );
     public abstract string[] availableScenarios();
@@ -84,7 +84,7 @@ public abstract class BaseAudioRouter : AudioRouter, GLib.Object
     public abstract string pullScenario() throws FreeSmartphone.Device.AudioError;
     public abstract void pushScenario( string scenario );
     public abstract void setScenario( string scenario );
-    public abstract void saveScenario( string scenario );
+    public abstract void saveScenario( string scenario ) throws FreeSmartphone.Error;
 
     public virtual uint8 currentVolume() throws FreeSmartphone.Error
     {

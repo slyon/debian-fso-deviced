@@ -4,15 +4,12 @@ NULL =
 AUTOMAKE_OPTIONS = subdir-objects
 
 SUBDIRS = \
-	ambientlight_n900 \
-	\
 	accelerometer \
 	accelerometer_kxsd9 \
 	accelerometer_lis302 \
 	\
 	audio \
 	router_alsa \
-	router_qdsp5 \
 	player_alsa \
 	\
 	backlight_omappanel \
@@ -28,23 +25,18 @@ SUBDIRS = \
 	kernel_info \
 	kernel_input \
 	\
-	n900_powercontrol \
 	openmoko_powercontrol \
 	thinkpad_powercontrol \
 	\
 	powercontrol_ifconfig \
 	\
-	powersupply_n900 \
-	\
 	vibrator_ledclass \
 	vibrator_omapvibe \
 	vibrator_timedoutputclass \
 	\
-	palmpre_quirks \
 	gta04_quirks \
 	herring_quirks \
-	\
-	proximity_n900 \
+	n900_quirks \
 	\
 	gpio_input \
 	dummy_input \
