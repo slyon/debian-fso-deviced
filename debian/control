@@ -10,20 +10,16 @@ DM-Upload-Allowed: yes
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
                libcanberra-dev (>= 0.24),
-               libfso-glib-dev (>= 2012.05.24.1),
-               libfsobasics-dev (>= 0.11.0),
-               libfsoframework-dev (>= 0.11.0),
-               libfsoresource-dev (>= 0.11.0),
-               libfsosystem-dev (>= 0.11.0),
-               libfsotransport-dev (>= 0.11.0),
+               libfso-glib-dev (>= 2012.07.27.2),
+               libfsoframework-dev (>= 0.12.0~rc2),
                libgee-dev (>= 0.5.0),
                libglib2.0-dev (>= 2.26.0),
                libgstreamer0.10-dev,
-               libvala-0.14-dev,
+               libvala-0.16-dev,
                linux-libc-dev,
                pkg-config,
                quilt,
-               valac-0.14
+               valac-0.16
 Standards-Version: 3.9.3
 Homepage: http://freesmartphone.org/
 Vcs-Git: git://git.debian.org/git/pkg-fso/fso-deviced.git
@@ -58,7 +54,7 @@ Depends: ${misc:Depends},
          fso-deviced-player-canberra (= ${binary:Version}),
          fso-deviced-openmoko (= ${binary:Version}) [armel],
          fso-deviced-n900 (= ${binary:Version}) [armel armhf],
-         fso-deviced-palmpre (= ${binary:Version}) [armel armhf],
+         fso-deviced-gta04 (= ${binary:Version}) [armel armhf],
          fso-deviced-ezx (= ${binary:Version}) [armel],
          fso-deviced-htc (= ${binary:Version}) [armel armhf]
 Description: freesmartphone.org device daemon (debug symbols)
@@ -145,24 +141,6 @@ Description: fso-deviced config files and plugins for Nokia 900
  status.
  .
  This package contains all modules and config files needed for the Nokia 900.
-
-Package: fso-deviced-palmpre
-Architecture: armel armhf
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends},
-         ${shlibs:Depends},
-         fso-deviced (= ${binary:Version})
-Provides: fso-deviced-platform
-Description: fso-deviced config files and plugins for PalmPre devices
- fsodeviced implements the freesmartphone.org Device API.
- .
- This API allows peripheral control, such as managing audio, backlight
- brightness, LEDs, Vibrator, Accelerometer, and power control for devices
- without dedicated controlling daemon. It can deal with charging notification
- and RTC, forwarding button events and notifying about the system's idleness
- status.
- .
- This package contains all modules and config files needed for PalmPre devices.
 
 Package: fso-deviced-ezx
 Architecture: armel
