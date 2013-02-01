@@ -1,5 +1,5 @@
 m4_define([fsogsmd_released], [1])
-m4_define([fsogsmd_base_version], [0.12.0-rc2])
+m4_define([fsogsmd_base_version], [0.12.0])
 m4_define([fsogsmd_maybe_gitrev], m4_if(fsogsmd_released, [1], [], [m4_esyscmd([git show-ref --hash=5 HEAD | tr -d '\n\r'])]))
 m4_define([fsogsmd_version], m4_if(fsogsmd_released, [1], [fsogsmd_base_version], [fsogsmd_base_version-fsogsmd_maybe_gitrev]))
 
@@ -217,6 +217,8 @@ AC_CONFIG_FILES([
   conf/openmoko_gta/alsa-2.6.39/Makefile
   conf/GTA04/Makefile
   conf/GTA04/alsa-3.4/Makefile
+  conf/GTA04/swrouting/Makefile
+  conf/GTA04/swrouting/alsa-default/Makefile
   conf/herring/Makefile
   conf/herring/alsa-default/Makefile
   data/Makefile
@@ -229,6 +231,7 @@ AC_CONFIG_FILES([
   src/plugins/accelerometer/Makefile
   src/plugins/accelerometer_kxsd9/Makefile
   src/plugins/accelerometer_lis302/Makefile
+  src/plugins/accelerometer_bma180/Makefile
   src/plugins/audio/Makefile
   src/plugins/backlight_omappanel/Makefile
   src/plugins/gpio_input/Makefile

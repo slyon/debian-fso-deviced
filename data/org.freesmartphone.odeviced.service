@@ -1,4 +1,4 @@
 [D-BUS Service]
 Name=org.freesmartphone.odeviced
-Exec=/usr/local/sbin/fsodeviced
+Exec=/home/morphis/Workspace/fso-new/buildroot/install/sbin/fsodeviced
 User=root
